@@ -12,15 +12,23 @@ import android.view.SurfaceHolder;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.RelativeLayout;
 
 import java.io.File;
 import java.io.IOException;
 
-public class Simplex extends Fragment implements SimplexHolder.SimplexHolderInterface, SurfaceHolder.Callback {
+public class Simplex extends Fragment implements
+        SimplexHolder.SimplexHolderInterface,
+        SurfaceHolder.Callback,
+        MediaPlayer.OnPreparedListener,
+        MediaPlayer.OnErrorListener,
+        MediaPlayer.OnCompletionListener
+{
 
     private SimplexHolder videoHolder;
     private SimplexVideoView videoView;
     private MediaPlayer mediaPlayer;
+    private SimplexController controller;
 
     private int mCurrentSeekPos = 0;
 
@@ -30,6 +38,10 @@ public class Simplex extends Fragment implements SimplexHolder.SimplexHolderInte
         listener = new SimplexInterface() {
             @Override public void didReceiveEvent(SimplexEvent event) {}};
     }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // Fragment
+    ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -53,6 +65,12 @@ public class Simplex extends Fragment implements SimplexHolder.SimplexHolderInte
             videoView.getHolder().addCallback(this);
             videoHolder.addView(videoView);
 
+            // create the controller
+            controller = new SimplexController(getActivity());
+            controller.setLayoutParams(new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+
+            videoHolder.addView(controller);
+
             listener.didReceiveEvent(SimplexEvent.Prepared);
 
         } else {
@@ -61,6 +79,10 @@ public class Simplex extends Fragment implements SimplexHolder.SimplexHolderInte
 
         return videoHolder;
     }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // Surface & Video View
+    ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
@@ -97,6 +119,41 @@ public class Simplex extends Fragment implements SimplexHolder.SimplexHolderInte
         videoView.resizeToContainer(newWidth, newHeight);
     }
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // Media Player
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    @Override
+    public void onPrepared(MediaPlayer mp) {
+
+        mp.start();
+
+        if (mCurrentSeekPos != 0) {
+            mp.seekTo(mCurrentSeekPos);
+            mp.start();
+        }
+    }
+
+    @Override
+    public void onCompletion(MediaPlayer mp) {
+
+        videoHolder.removeView(videoView);
+
+        mp.stop();
+        mp.setDisplay(null);
+        mp.release();
+        mediaPlayer = null;
+    }
+
+    @Override
+    public boolean onError(MediaPlayer mp, int what, int extra) {
+        return false;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // Control Methods
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
     public void play (String path) throws Throwable {
 
         Activity current = getActivity();
@@ -111,43 +168,14 @@ public class Simplex extends Fragment implements SimplexHolder.SimplexHolderInte
                 mediaPlayer = new MediaPlayer();
                 mediaPlayer.setDataSource(current, Uri.parse(videoURL));
 
-                mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-                    @Override
-                    public void onPrepared(final MediaPlayer mp) {
-
-                        mp.start();
-
-                        if (mCurrentSeekPos != 0) {
-                            mp.seekTo(mCurrentSeekPos);
-                            mp.start();
-                        }
-
-                    }
-                });
-                mediaPlayer.setOnErrorListener(new MediaPlayer.OnErrorListener() {
-                    @Override
-                    public boolean onError(MediaPlayer mp, int what, int extra) {
-                        return false;
-                    }
-                });
-                mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-                    @Override
-                    public void onCompletion(MediaPlayer mp) {
-
-                        videoHolder.removeView(videoView);
-
-                        mp.stop();
-                        mp.setDisplay(null);
-                        mp.release();
-                        mediaPlayer = null;
-                    }
-                });
+                mediaPlayer.setOnPreparedListener(this);
+                mediaPlayer.setOnErrorListener(this);
+                mediaPlayer.setOnCompletionListener(this);
 
             } else {
                 throw new Exception("File " + path + " does not exist on disk. Will not play!");
             }
         }
-
     }
 
     public void close () {
