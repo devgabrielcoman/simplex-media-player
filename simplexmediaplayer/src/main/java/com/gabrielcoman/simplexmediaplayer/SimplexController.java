@@ -4,11 +4,13 @@ import android.content.Context;
 import android.graphics.Color;
 import android.util.AttributeSet;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.RelativeLayout;
 
 public class SimplexController extends RelativeLayout {
 
     private RelativeLayout controller;
+    private Button playbackButton;
 
     public SimplexController(Context context) {
         this(context, null, 0);
@@ -27,7 +29,24 @@ public class SimplexController extends RelativeLayout {
         controller.setLayoutParams(layoutParams);
         controller.setBackgroundColor(Color.BLUE);
         addView(controller);
+
+        playbackButton = new Button(context);
+        playbackButton.setBackgroundColor(Color.GREEN);
+        playbackButton.setLayoutParams(new ViewGroup.LayoutParams(100, 100));
+        controller.addView(playbackButton);
+        setPlaybackButtonPause();
     }
 
+    public void setPlaybackButtonClickListener(OnClickListener listener) {
+        playbackButton.setOnClickListener(listener);
+    }
+
+    public void setPlaybackButtonPlay () {
+        playbackButton.setText(">");
+    }
+
+    public void setPlaybackButtonPause () {
+        playbackButton.setText("||");
+    }
 
 }

@@ -68,7 +68,20 @@ public class Simplex extends Fragment implements
             // create the controller
             controller = new SimplexController(getActivity());
             controller.setLayoutParams(new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-
+            controller.setPlaybackButtonClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (mediaPlayer != null) {
+                        if (mediaPlayer.isPlaying()) {
+                            controller.setPlaybackButtonPlay();
+                            mediaPlayer.pause();
+                        } else {
+                            controller.setPlaybackButtonPause();
+                            mediaPlayer.start();
+                        }
+                    }
+                }
+            });
             videoHolder.addView(controller);
 
             listener.didReceiveEvent(SimplexEvent.Prepared);
