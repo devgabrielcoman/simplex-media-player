@@ -34,6 +34,10 @@ public class Simplex extends Fragment implements
 
     private SimplexInterface listener = null;
 
+    private Boolean isStarted = false;
+    private Boolean isPaused = false;
+    private Boolean autostart = false;
+
     public Simplex () {
         listener = new SimplexInterface() {
             @Override public void didReceiveEvent(SimplexEvent event) {}};
@@ -68,17 +72,38 @@ public class Simplex extends Fragment implements
             // create the controller
             controller = new SimplexController(getActivity());
             controller.setLayoutParams(new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+            controller.hideStartButton(autostart);
+            controller.setPlaybackButtonPlay(autostart);
             controller.setPlaybackButtonClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     if (mediaPlayer != null) {
+                        // PAUSE
                         if (mediaPlayer.isPlaying()) {
-                            controller.setPlaybackButtonPlay();
+                            controller.setPlaybackButtonPlay(false);
                             mediaPlayer.pause();
-                        } else {
-                            controller.setPlaybackButtonPause();
-                            mediaPlayer.start();
+                            isPaused = true;
                         }
+                        // PLAY
+                        else {
+                            controller.setPlaybackButtonPlay(true);
+                            controller.hideStartButton(true);
+                            mediaPlayer.start();
+                            isStarted = true;
+                            isPaused = false;
+                        }
+                    }
+                }
+            });
+            controller.setStartButtonClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (mediaPlayer != null) {
+                        controller.setPlaybackButtonPlay(true);
+                        controller.hideStartButton(true);
+                        mediaPlayer.start();
+                        isStarted = true;
+                        isPaused = false;
                     }
                 }
             });
@@ -139,11 +164,12 @@ public class Simplex extends Fragment implements
     @Override
     public void onPrepared(MediaPlayer mp) {
 
-        mp.start();
+        if (!isStarted && !autostart) return;
 
-        if (mCurrentSeekPos != 0) {
-            mp.seekTo(mCurrentSeekPos);
-            mp.start();
+        mp.seekTo(mCurrentSeekPos);
+        mp.start();
+        if (isPaused) {
+            mp.pause();
         }
     }
 
@@ -206,6 +232,15 @@ public class Simplex extends Fragment implements
     public void setListener (SimplexInterface listener) {
         this.listener = listener != null ? listener : this.listener;
     }
+
+    public void shouldAutostart () {
+        autostart = true;
+        isPaused = false;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // Control Methods
+    ////////////////////////////////////////////////////////////////////////////////////////////////
 
     public interface SimplexInterface {
         void didReceiveEvent (SimplexEvent event);

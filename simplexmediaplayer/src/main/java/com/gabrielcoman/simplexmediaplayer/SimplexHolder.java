@@ -32,16 +32,21 @@ public class SimplexHolder extends FrameLayout {
 
                 int newWidth = getMeasuredWidth();
                 int newHeight = getMeasuredHeight();
+                boolean shouldTrigger = shouldTriggerLayoutChange(newWidth, newHeight);
 
-                if (newWidth != oldWidth || newHeight != oldHeight) {
+                if (shouldTrigger) {
                     oldWidth = newWidth;
                     oldHeight = newHeight;
 
-                    listener.didChangeLayout(getMeasuredWidth(), getMeasuredHeight());
+                    listener.didChangeLayout(newWidth, newHeight);
                 }
             }
         });
 
+    }
+
+    public boolean shouldTriggerLayoutChange (int newWidth, int newHeight) {
+        return newWidth != oldWidth || newHeight != oldHeight;
     }
 
     public void setListener (SimplexHolderInterface listener) {

@@ -1,6 +1,12 @@
 CHANGELOG
 =========
 
+1.0.3
+ - Set the video player to not automatically play video content
+ - Autoplay can now be set by the user
+ - Added a main "start" button that appears in the center of the video player UI if the video player is not set to autoplay; the "start" button will disappear once the video start playing; 
+ - Added better state management when pausing and switching orientation or leaving for another activity; now the video player respects the play / pause state and will return in the same state. 
+
 1.0.2
  - Started work on the controller
 

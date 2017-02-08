@@ -9,6 +9,7 @@ import android.widget.RelativeLayout;
 
 public class SimplexController extends RelativeLayout {
 
+    private Button startButton;
     private RelativeLayout controller;
     private Button playbackButton;
 
@@ -23,6 +24,14 @@ public class SimplexController extends RelativeLayout {
     public SimplexController(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
 
+        startButton = new Button(context);
+        RelativeLayout.LayoutParams startButtonParams = new RelativeLayout.LayoutParams(100, 100);
+        startButtonParams.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
+        startButton.setLayoutParams(startButtonParams);
+        startButton.setBackgroundColor(Color.GREEN);
+        startButton.setText(">");
+        addView(startButton);
+
         controller = new RelativeLayout(context);
         RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 100);
         layoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
@@ -34,19 +43,22 @@ public class SimplexController extends RelativeLayout {
         playbackButton.setBackgroundColor(Color.GREEN);
         playbackButton.setLayoutParams(new ViewGroup.LayoutParams(100, 100));
         controller.addView(playbackButton);
-        setPlaybackButtonPause();
     }
 
     public void setPlaybackButtonClickListener(OnClickListener listener) {
         playbackButton.setOnClickListener(listener);
     }
 
-    public void setPlaybackButtonPlay () {
-        playbackButton.setText(">");
+    public void setStartButtonClickListener(OnClickListener listener) {
+        startButton.setOnClickListener(listener);
     }
 
-    public void setPlaybackButtonPause () {
-        playbackButton.setText("||");
+    public void setPlaybackButtonPlay (boolean play) {
+        playbackButton.setText(play ? "||" : ">");
+    }
+
+    public void hideStartButton (boolean hidden) {
+        startButton.setVisibility(hidden ? GONE : VISIBLE);
     }
 
 }

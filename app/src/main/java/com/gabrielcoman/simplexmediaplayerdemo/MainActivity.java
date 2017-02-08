@@ -1,8 +1,11 @@
 package com.gabrielcoman.simplexmediaplayerdemo;
 
 import android.app.FragmentManager;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
 
 import com.gabrielcoman.simplexmediaplayer.Simplex;
 import com.gabrielcoman.simplexmediaplayer.SimplexEvent;
@@ -22,9 +25,11 @@ public class MainActivity extends AppCompatActivity {
 
         final FragmentManager manager = getFragmentManager();
         if (manager.findFragmentByTag(myPlayerTag) == null) {
-            myPlayer = new Simplex();
 
-            SAFileDownloader.getInstance().downloadFileFrom(MainActivity.this, "https://s3-eu-west-1.amazonaws.com/sb-ads-video-transcoded/UAICy6n2MiSfyxmPoPjV4sqWPVXTRjVi.mp4", new SAFileDownloaderInterface() {
+            myPlayer = new Simplex();
+            // myPlayer.shouldAutostart();
+
+            SAFileDownloader.getInstance().downloadFileFrom(MainActivity.this, "https://ads.superawesome.tv/v2/demo_images/video.mp4", new SAFileDownloaderInterface() {
                 @Override
                 public void saDidDownloadFile(boolean success, final String filePath) {
 
@@ -50,5 +55,9 @@ public class MainActivity extends AppCompatActivity {
             myPlayer = (Simplex) manager.findFragmentByTag(myPlayerTag);
         }
 
+    }
+
+    public void gotoOther (View view) {
+        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://hotnews.ro")));
     }
 }
