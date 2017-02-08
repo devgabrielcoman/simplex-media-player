@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+1.0.4
+ - Made the Simplex class implement View.OnClickListener; not only one method, "onClick(View v)", handles both the start and the play/pause button.
+ - Created two private methods that resume / pause the video
+ - Renamed the former "play(String diskPath)" method to "setMediaFile(String diskPath)" because it alone doesn't start playing, the UI does it.
+
 1.0.3
  - Set the video player to not automatically play video content
  - Autoplay can now be set by the user

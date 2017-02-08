@@ -22,7 +22,8 @@ public class Simplex extends Fragment implements
         SurfaceHolder.Callback,
         MediaPlayer.OnPreparedListener,
         MediaPlayer.OnErrorListener,
-        MediaPlayer.OnCompletionListener
+        MediaPlayer.OnCompletionListener,
+        View.OnClickListener
 {
 
     private SimplexHolder videoHolder;
@@ -74,39 +75,8 @@ public class Simplex extends Fragment implements
             controller.setLayoutParams(new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
             controller.hideStartButton(autostart);
             controller.setPlaybackButtonPlay(autostart);
-            controller.setPlaybackButtonClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (mediaPlayer != null) {
-                        // PAUSE
-                        if (mediaPlayer.isPlaying()) {
-                            controller.setPlaybackButtonPlay(false);
-                            mediaPlayer.pause();
-                            isPaused = true;
-                        }
-                        // PLAY
-                        else {
-                            controller.setPlaybackButtonPlay(true);
-                            controller.hideStartButton(true);
-                            mediaPlayer.start();
-                            isStarted = true;
-                            isPaused = false;
-                        }
-                    }
-                }
-            });
-            controller.setStartButtonClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (mediaPlayer != null) {
-                        controller.setPlaybackButtonPlay(true);
-                        controller.hideStartButton(true);
-                        mediaPlayer.start();
-                        isStarted = true;
-                        isPaused = false;
-                    }
-                }
-            });
+            controller.setPlaybackButtonClickListener(Simplex.this);
+            controller.setStartButtonClickListener(Simplex.this);
             videoHolder.addView(controller);
 
             listener.didReceiveEvent(SimplexEvent.Prepared);
@@ -190,14 +160,31 @@ public class Simplex extends Fragment implements
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
+    // Click on different buttons in the Player
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    @Override
+    public void onClick(View v) {
+
+        if (mediaPlayer != null) {
+            if (mediaPlayer.isPlaying()) {
+                pause();
+            }
+            else {
+                play();
+            }
+        }
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
     // Control Methods
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public void play (String path) throws Throwable {
+    public void setMediaFile(String path) throws Throwable {
 
         Activity current = getActivity();
         if (current == null) {
-            throw new Exception("Fragment not prepared yet! Await the 'Video_Prepared' event in order to play.");
+            throw new Exception("Fragment not prepared yet! Await the 'Video_Prepared' event in order to setMediaFile.");
         } else {
             File file = new File(current.getFilesDir(), path);
             if (file.exists()) {
@@ -212,8 +199,26 @@ public class Simplex extends Fragment implements
                 mediaPlayer.setOnCompletionListener(this);
 
             } else {
-                throw new Exception("File " + path + " does not exist on disk. Will not play!");
+                throw new Exception("File " + path + " does not exist on disk. Will not setMediaFile!");
             }
+        }
+    }
+
+    private void play () {
+        if (mediaPlayer != null) {
+            controller.setPlaybackButtonPlay(true);
+            controller.hideStartButton(true);
+            mediaPlayer.start();
+            isStarted = true;
+            isPaused = false;
+        }
+    }
+
+    private void pause () {
+        if (mediaPlayer != null) {
+            controller.setPlaybackButtonPlay(false);
+            mediaPlayer.pause();
+            isPaused = true;
         }
     }
 
@@ -229,17 +234,21 @@ public class Simplex extends Fragment implements
         }
     }
 
-    public void setListener (SimplexInterface listener) {
-        this.listener = listener != null ? listener : this.listener;
-    }
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // Setters & Getters
+    ////////////////////////////////////////////////////////////////////////////////////////////////
 
     public void shouldAutostart () {
         autostart = true;
         isPaused = false;
     }
 
+    public void setListener (SimplexInterface listener) {
+        this.listener = listener != null ? listener : this.listener;
+    }
+
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    // Control Methods
+    // Interface listener
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     public interface SimplexInterface {

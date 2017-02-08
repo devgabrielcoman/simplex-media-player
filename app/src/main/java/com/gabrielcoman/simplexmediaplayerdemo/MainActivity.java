@@ -27,7 +27,7 @@ public class MainActivity extends AppCompatActivity {
         if (manager.findFragmentByTag(myPlayerTag) == null) {
 
             myPlayer = new Simplex();
-            // myPlayer.shouldAutostart();
+            myPlayer.shouldAutostart();
 
             SAFileDownloader.getInstance().downloadFileFrom(MainActivity.this, "https://ads.superawesome.tv/v2/demo_images/video.mp4", new SAFileDownloaderInterface() {
                 @Override
@@ -38,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
                         public void didReceiveEvent(SimplexEvent event) {
                             if (event == SimplexEvent.Prepared) {
                                 try {
-                                    myPlayer.play(filePath);
+                                    myPlayer.setMediaFile(filePath);
                                 } catch (Throwable throwable) {
                                     throwable.printStackTrace();
                                 }
