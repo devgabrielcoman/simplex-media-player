@@ -26,7 +26,8 @@ public class Simplex extends Fragment implements
         MediaPlayer.OnPreparedListener,
         MediaPlayer.OnErrorListener,
         MediaPlayer.OnCompletionListener,
-        View.OnClickListener
+        View.OnClickListener,
+        SimplexController.ProgressIndicatorInterface
 {
 
     private SimplexHolder videoHolder;
@@ -39,11 +40,16 @@ public class Simplex extends Fragment implements
     private int mCurrentSeekPos = 0;
     private int mTotalDuration = 1;
 
-    private SimplexInterface listener = null;
+    public enum PlaybackState {
+        NOTSTARTED,
+        AUTOSTART,
+        PAUSED,
+        PLAYING,
+        REWIND
+    }
+    private PlaybackState state = PlaybackState.NOTSTARTED;
 
-    private Boolean isStarted = false;
-    private Boolean isPaused = false;
-    private Boolean autostart = false;
+    private SimplexInterface listener = null;
 
     public Simplex () {
         listener = new SimplexInterface() {
@@ -64,16 +70,20 @@ public class Simplex extends Fragment implements
             @Override
             public void run() {
 
-                float percent;
-
-                if (mediaPlayer != null) {
-                    percent = mediaPlayer.getCurrentPosition() / (float) mTotalDuration;
+                if (state == PlaybackState.REWIND) {
+                    if (controller != null) {
+                        controller.setPlaybackIndicatorPercent(1.0F);
+                    }
                 } else {
-                    percent = mCurrentSeekPos / (float) mTotalDuration;
-                }
+                    float percent = 0.0F;
 
-                if (controller != null) {
-                    controller.setPlaybackIndicatorPercent(percent);
+                    if (mediaPlayer != null) {
+                        percent = mediaPlayer.getCurrentPosition() / (float) mTotalDuration;
+                    }
+
+                    if (controller != null) {
+                        controller.setPlaybackIndicatorPercent(percent);
+                    }
                 }
 
                 if (timerHandler != null) {
@@ -102,10 +112,11 @@ public class Simplex extends Fragment implements
             // create the controller
             controller = new SimplexController(getActivity());
             controller.setLayoutParams(new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-            controller.hideStartButton(autostart);
-            controller.setPlaybackButtonPlay(autostart);
+            controller.hideStartButton(state == PlaybackState.AUTOSTART);
+            controller.setPlaybackButtonForState(state);
             controller.setPlaybackButtonClickListener(Simplex.this);
             controller.setStartButtonClickListener(Simplex.this);
+            controller.setListener(this);
             videoHolder.addView(controller);
 
             listener.didReceiveEvent(SimplexEvent.Prepared);
@@ -172,24 +183,34 @@ public class Simplex extends Fragment implements
     @Override
     public void onPrepared(MediaPlayer mp) {
 
-        if (!isStarted && !autostart) return;
+        switch (state) {
 
-        mp.seekTo(mCurrentSeekPos);
-        mp.start();
-        if (isPaused) {
-            mp.pause();
+            case AUTOSTART:
+            case PLAYING: {
+                play(mCurrentSeekPos);
+                break;
+            }
+            case PAUSED: {
+                mp.seekTo(mCurrentSeekPos);
+                break;
+            }
+            case REWIND: {
+                mp.seekTo(mTotalDuration);
+                break;
+            }
+            case NOTSTARTED: {
+                // do nothing
+                break;
+            }
         }
     }
 
     @Override
     public void onCompletion(MediaPlayer mp) {
 
-        videoHolder.removeView(videoView);
-
-        mp.stop();
-        mp.setDisplay(null);
-        mp.release();
-        mediaPlayer = null;
+        mp.pause();
+        state = PlaybackState.REWIND;
+        controller.setPlaybackButtonForState(state);
     }
 
     @Override
@@ -205,13 +226,36 @@ public class Simplex extends Fragment implements
     public void onClick(View v) {
 
         if (mediaPlayer != null) {
-            if (mediaPlayer.isPlaying()) {
-                pause();
-            }
-            else {
-                play();
+            switch (state) {
+                case NOTSTARTED:
+                case PAUSED: {
+                    play(mCurrentSeekPos);
+                    break;
+                }
+                case PLAYING: {
+                    pause();
+                    break;
+                }
+                case REWIND: {
+                    play(0);
+                    break;
+                }
+                case AUTOSTART: {
+                    // do nothing
+                    break;
+                }
             }
         }
+    }
+
+    @Override
+    public void shouldAdvanceToStep(float percent) {
+
+        if (mediaPlayer != null) {
+            int cPosition = (int) (percent * mTotalDuration);
+            play(cPosition);
+        }
+
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -242,21 +286,22 @@ public class Simplex extends Fragment implements
         }
     }
 
-    private void play () {
+    private void play (int position) {
         if (mediaPlayer != null) {
-            controller.setPlaybackButtonPlay(true);
+            state = PlaybackState.PLAYING;
+            controller.setPlaybackButtonForState(state);
             controller.hideStartButton(true);
+            mediaPlayer.seekTo(position);
             mediaPlayer.start();
-            isStarted = true;
-            isPaused = false;
         }
     }
 
     private void pause () {
         if (mediaPlayer != null) {
-            controller.setPlaybackButtonPlay(false);
+            state = PlaybackState.PAUSED;
+            mCurrentSeekPos = mediaPlayer.getCurrentPosition();
+            controller.setPlaybackButtonForState(state);
             mediaPlayer.pause();
-            isPaused = true;
         }
     }
 
@@ -277,8 +322,7 @@ public class Simplex extends Fragment implements
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     public void shouldAutostart () {
-        autostart = true;
-        isPaused = false;
+        state = PlaybackState.AUTOSTART;
     }
 
     public void setListener (SimplexInterface listener) {

@@ -31,7 +31,7 @@ public class MainActivity extends AppCompatActivity {
         if (manager.findFragmentByTag(myPlayerTag) == null) {
 
             myPlayer = new Simplex();
-            myPlayer.shouldAutostart();
+            // myPlayer.shouldAutostart();
 
             SAFileDownloader.getInstance().downloadFileFrom(MainActivity.this, url1, new SAFileDownloaderInterface() {
                 @Override

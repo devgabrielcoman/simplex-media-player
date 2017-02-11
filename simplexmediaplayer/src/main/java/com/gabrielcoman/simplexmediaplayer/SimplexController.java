@@ -3,12 +3,14 @@ package com.gabrielcoman.simplexmediaplayer;
 import android.content.Context;
 import android.graphics.Color;
 import android.util.AttributeSet;
+import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.RelativeLayout;
 
-public class SimplexController extends RelativeLayout {
+public class SimplexController extends RelativeLayout implements View.OnTouchListener {
 
     private Button startButton;
     private RelativeLayout controller;
@@ -16,8 +18,12 @@ public class SimplexController extends RelativeLayout {
     private RelativeLayout progressHolder;
     private View progressIndicator;
 
+    private ProgressIndicatorInterface listener;
+
     public SimplexController(Context context) {
         this(context, null, 0);
+        listener = new ProgressIndicatorInterface() {
+            @Override public void shouldAdvanceToStep(float percent) {}};
     }
 
     public SimplexController(Context context, AttributeSet attrs) {
@@ -52,6 +58,7 @@ public class SimplexController extends RelativeLayout {
         layoutParams1.setMargins(110, 10, 10, 10);
         progressHolder.setLayoutParams(layoutParams1);
         progressHolder.setBackgroundColor(Color.MAGENTA);
+        progressHolder.setOnTouchListener(this);
         controller.addView(progressHolder);
 
         progressIndicator = new View(context);
@@ -69,8 +76,24 @@ public class SimplexController extends RelativeLayout {
         startButton.setOnClickListener(listener);
     }
 
-    public void setPlaybackButtonPlay (boolean play) {
-        playbackButton.setText(play ? "||" : ">");
+    public void setPlaybackButtonForState (Simplex.PlaybackState state) {
+
+        switch (state) {
+            case NOTSTARTED:
+            case PAUSED: {
+                playbackButton.setText(">");
+                break;
+            }
+            case AUTOSTART:
+            case PLAYING: {
+                playbackButton.setText("||");
+                break;
+            }
+            case REWIND: {
+                playbackButton.setText("R");
+                break;
+            }
+        }
     }
 
     public void hideStartButton (boolean hidden) {
@@ -87,4 +110,23 @@ public class SimplexController extends RelativeLayout {
 
     }
 
+    @Override
+    public boolean onTouch(View v, MotionEvent event) {
+
+        float current = event.getX();
+        int totalSize = progressHolder.getMeasuredWidth();
+        float percent = current / (float) totalSize;
+        percent = percent > 1 ? 1 : percent;
+        percent = percent < 0 ? 0 : percent;
+        listener.shouldAdvanceToStep(percent);
+        return false;
+    }
+
+    public void setListener (ProgressIndicatorInterface listener) {
+        this.listener = listener != null ? listener : this.listener;
+    }
+
+    interface ProgressIndicatorInterface {
+        void shouldAdvanceToStep (float percent);
+    }
 }
