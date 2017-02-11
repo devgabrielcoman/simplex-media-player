@@ -11,11 +11,25 @@
     android:orientation="vertical"
     tools:context="com.gabrielcoman.simplexmediaplayerdemo.MainActivity">
 
-    <Button
-        android:text="Go to other activity"
-        android:onClick="gotoOther"
+
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="40dp" />
+        android:layout_height="40dp"
+        android:orientation="horizontal">
+
+        <Button
+            android:text="Open Activity"
+            android:onClick="gotoOther"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="match_parent" />
+        <Button
+            android:text="Destroy"
+            android:onClick="destroyVideo"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="match_parent" />
+    </LinearLayout>
 
     <RelativeLayout
         android:id="@+id/PlayerHolder"

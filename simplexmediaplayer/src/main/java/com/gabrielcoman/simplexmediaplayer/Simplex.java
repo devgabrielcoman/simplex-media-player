@@ -6,7 +6,10 @@ import android.graphics.Color;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.annotation.Nullable;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.SurfaceHolder;
 import android.view.View;
@@ -31,7 +34,10 @@ public class Simplex extends Fragment implements
     private MediaPlayer mediaPlayer;
     private SimplexController controller;
 
+    private Handler timerHandler;
+
     private int mCurrentSeekPos = 0;
+    private int mTotalDuration = 1;
 
     private SimplexInterface listener = null;
 
@@ -52,6 +58,29 @@ public class Simplex extends Fragment implements
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
+
+        timerHandler = new Handler(Looper.getMainLooper());
+        timerHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+
+                float percent;
+
+                if (mediaPlayer != null) {
+                    percent = mediaPlayer.getCurrentPosition() / (float) mTotalDuration;
+                } else {
+                    percent = mCurrentSeekPos / (float) mTotalDuration;
+                }
+
+                if (controller != null) {
+                    controller.setPlaybackIndicatorPercent(percent);
+                }
+
+                if (timerHandler != null) {
+                    timerHandler.postDelayed(this, 250);
+                }
+            }
+        }, 250);
     }
 
     @Nullable
@@ -88,6 +117,14 @@ public class Simplex extends Fragment implements
         return videoHolder;
     }
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (timerHandler != null) {
+            timerHandler = null;
+        }
+    }
+
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // Surface & Video View
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -105,6 +142,7 @@ public class Simplex extends Fragment implements
             e.printStackTrace();
         }
 
+        mTotalDuration = mediaPlayer.getDuration();
         videoView.setVideoSize(mediaPlayer.getVideoWidth(), mediaPlayer.getVideoHeight());
         videoView.resizeToContainer(videoHolder.getMeasuredWidth(), videoHolder.getMeasuredHeight());
     }
