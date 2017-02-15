@@ -2,7 +2,9 @@ package com.gabrielcoman.simplexmediaplayer;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.content.res.AssetFileDescriptor;
 import android.graphics.Color;
+import android.media.MediaDataSource;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
@@ -18,6 +20,7 @@ import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
 
 import java.io.File;
+import java.io.FileDescriptor;
 import java.io.IOException;
 
 public class Simplex extends Fragment implements
@@ -35,10 +38,14 @@ public class Simplex extends Fragment implements
     private MediaPlayer mediaPlayer;
     private SimplexController controller;
 
-    private Handler timerHandler;
+    private Handler progressHandler;
+    private Handler mediaHandler;
 
     private int mCurrentSeekPos = 0;
     private int mTotalDuration = 1;
+
+    private boolean isPrepared = false;
+    private String mMediaFileToPlay = null;
 
     public enum PlaybackState {
         NOTSTARTED,
@@ -49,24 +56,24 @@ public class Simplex extends Fragment implements
     }
     private PlaybackState state = PlaybackState.NOTSTARTED;
 
-    private SimplexInterface listener = null;
-
-    public Simplex () {
-        listener = new SimplexInterface() {
-            @Override public void didReceiveEvent(SimplexEvent event) {}};
-    }
-
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // Fragment
     ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    public Simplex () {
+//        mediaPlayer = new MediaPlayer();
+//        mediaPlayer.setOnPreparedListener(this);
+//        mediaPlayer.setOnErrorListener(this);
+//        mediaPlayer.setOnCompletionListener(this);
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
 
-        timerHandler = new Handler(Looper.getMainLooper());
-        timerHandler.postDelayed(new Runnable() {
+        progressHandler = new Handler(Looper.getMainLooper());
+        progressHandler.postDelayed(new Runnable() {
             @Override
             public void run() {
 
@@ -75,19 +82,23 @@ public class Simplex extends Fragment implements
                         controller.setPlaybackIndicatorPercent(1.0F);
                     }
                 } else {
-                    float percent = 0.0F;
+                    float percent;
 
-                    if (mediaPlayer != null) {
+                    try {
                         percent = mediaPlayer.getCurrentPosition() / (float) mTotalDuration;
+                    } catch (Exception e) {
+                        percent = mCurrentSeekPos / (float) mTotalDuration;
                     }
 
-                    if (controller != null) {
+                    try {
                         controller.setPlaybackIndicatorPercent(percent);
+                    } catch (Exception e) {
+                        // do nothing
                     }
                 }
 
-                if (timerHandler != null) {
-                    timerHandler.postDelayed(this, 250);
+                if (progressHandler != null) {
+                    progressHandler.postDelayed(this, 250);
                 }
             }
         }, 250);
@@ -119,8 +130,6 @@ public class Simplex extends Fragment implements
             controller.setListener(this);
             videoHolder.addView(controller);
 
-            listener.didReceiveEvent(SimplexEvent.Prepared);
-
         } else {
             container.removeView(videoHolder);
         }
@@ -131,8 +140,11 @@ public class Simplex extends Fragment implements
     @Override
     public void onDestroy() {
         super.onDestroy();
-        if (timerHandler != null) {
-            timerHandler = null;
+        if (progressHandler != null) {
+            progressHandler = null;
+        }
+        if (mediaHandler != null) {
+            mediaHandler = null;
         }
     }
 
@@ -143,19 +155,25 @@ public class Simplex extends Fragment implements
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
 
-        if (mediaPlayer == null) return;
+        // set is prepared to true
+        isPrepared = true;
 
-        mediaPlayer.setDisplay(holder);
-
-        try {
-            mediaPlayer.prepare();
-        } catch (IOException e) {
-            e.printStackTrace();
+        if (mediaPlayer != null) {
+////
+////            Log.d("SIMPLEX", "Holder here is " + holder);
+////
+            mediaPlayer.setDisplay(holder);
+//////
+            try {
+                mediaPlayer.prepare();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+////
+            videoView.setVideoSize(mediaPlayer.getVideoWidth(), mediaPlayer.getVideoHeight());
+            videoView.resizeToContainer(videoHolder.getMeasuredWidth(), videoHolder.getMeasuredHeight());
+//
         }
-
-        mTotalDuration = mediaPlayer.getDuration();
-        videoView.setVideoSize(mediaPlayer.getVideoWidth(), mediaPlayer.getVideoHeight());
-        videoView.resizeToContainer(videoHolder.getMeasuredWidth(), videoHolder.getMeasuredHeight());
     }
 
     @Override
@@ -166,14 +184,18 @@ public class Simplex extends Fragment implements
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
         if (mediaPlayer != null) {
+
             mCurrentSeekPos = mediaPlayer.getCurrentPosition();
             mediaPlayer.stop();
+
         }
     }
 
     @Override
     public void didChangeLayout(int newWidth, int newHeight) {
-        videoView.resizeToContainer(newWidth, newHeight);
+        if (mediaPlayer != null) {
+            videoView.resizeToContainer(newWidth, newHeight);
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -182,6 +204,8 @@ public class Simplex extends Fragment implements
 
     @Override
     public void onPrepared(MediaPlayer mp) {
+
+        Log.d("SIMPLEX", "Duration " + mp.getDuration() + " , " + mp.getVideoWidth() + " CPOS " + mCurrentSeekPos);
 
         switch (state) {
 
@@ -262,26 +286,79 @@ public class Simplex extends Fragment implements
     // Control Methods
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public void setMediaFile(String path) throws Throwable {
+    public void setMediaFile(String path) {
 
-        Activity current = getActivity();
-        if (current == null) {
-            throw new Exception("Fragment not prepared yet! Await the 'Video_Prepared' event in order to setMediaFile.");
-        } else {
-            File file = new File(current.getFilesDir(), path);
-            if (file.exists()) {
+        mMediaFileToPlay = path;
 
-                String videoURL = file.toString();
+        mediaHandler = new Handler(Looper.getMainLooper());
+        mediaHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
 
-                mediaPlayer = new MediaPlayer();
-                mediaPlayer.setDataSource(current, Uri.parse(videoURL));
+                if (!isPrepared && mediaHandler != null) {
+                    mediaHandler.postDelayed(this, 250);
+                } else {
 
-                mediaPlayer.setOnPreparedListener(this);
-                mediaPlayer.setOnErrorListener(this);
-                mediaPlayer.setOnCompletionListener(this);
+                    try {
+                        prepareMedia(mMediaFileToPlay);
+                    } catch (Throwable throwable) {
+                        throwable.printStackTrace();
+                    }
+                }
+            }
+        }, 250);
+    }
 
-            } else {
-                throw new Exception("File " + path + " does not exist on disk. Will not setMediaFile!");
+    private void prepareMedia (String path) throws Throwable {
+
+        if (path == null) {
+            throw new Exception("No media file set to play. Please use 'setMediaFile' to set a valid file path");
+        }
+        else {
+            Activity current = getActivity();
+            if (current == null) {
+                throw new Exception("Fragment not prepared yet!");
+            }
+            else {
+                File file = new File(current.getFilesDir(), path);
+                Log.d("SuperAwesome", "FILE IS: file://" + Uri.parse(file.toString()).toString());
+                if (!file.exists()) {
+                    throw new Exception("File " + path + " does not exist on disk. Will not set this media file!");
+                }
+                else {
+                    String videoURL = file.toString();
+
+                    if (mediaPlayer == null) {
+
+                        mediaPlayer = new MediaPlayer();
+                        mediaPlayer.setDisplay(videoView.getHolder());
+                        mediaPlayer.setOnPreparedListener(this);
+                        mediaPlayer.setOnErrorListener(this);
+                        mediaPlayer.setOnCompletionListener(this);
+                    } else {
+                        mediaPlayer.reset();
+                    }
+
+                    mCurrentSeekPos = 0;
+
+                    try {
+                        mediaPlayer.setDataSource(current, Uri.parse(videoURL));
+                    } catch (IllegalArgumentException | SecurityException | IllegalStateException | IOException e) {
+                        e.printStackTrace();
+                    }
+
+                    try {
+                        mediaPlayer.prepare();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+                    mTotalDuration = mediaPlayer.getDuration();
+                    videoView.setVideoSize(mediaPlayer.getVideoWidth(), mediaPlayer.getVideoHeight());
+                    videoView.resizeToContainer(videoHolder.getMeasuredWidth(), videoHolder.getMeasuredHeight());
+
+                    Log.d("SIMPLEX", "Duration " + mediaPlayer.getDuration() + " , " + mediaPlayer.getVideoWidth());
+                }
             }
         }
     }
@@ -323,17 +400,5 @@ public class Simplex extends Fragment implements
 
     public void shouldAutostart () {
         state = PlaybackState.AUTOSTART;
-    }
-
-    public void setListener (SimplexInterface listener) {
-        this.listener = listener != null ? listener : this.listener;
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    // Interface listener
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-
-    public interface SimplexInterface {
-        void didReceiveEvent (SimplexEvent event);
     }
 }

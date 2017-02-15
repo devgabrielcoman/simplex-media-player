@@ -29,6 +29,18 @@
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="match_parent" />
+        <Button
+            android:text="Media 1"
+            android:onClick="playMedia1"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="match_parent" />
+        <Button
+            android:text="Media 2"
+            android:onClick="playMedia2"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="match_parent" />
     </LinearLayout>
 
     <RelativeLayout
