@@ -17,6 +17,7 @@ public class SimplexController extends RelativeLayout implements View.OnTouchLis
     private Button playbackButton;
     private RelativeLayout progressHolder;
     private View progressIndicator;
+    private View bufferIndicator;
 
     private ProgressIndicatorInterface listener;
 
@@ -60,6 +61,11 @@ public class SimplexController extends RelativeLayout implements View.OnTouchLis
         progressHolder.setBackgroundColor(Color.MAGENTA);
         progressHolder.setOnTouchListener(this);
         controller.addView(progressHolder);
+
+        bufferIndicator = new View(context);
+        bufferIndicator.setLayoutParams(new ViewGroup.LayoutParams(0, 80));
+        bufferIndicator.setBackgroundColor(Color.CYAN);
+        progressHolder.addView(bufferIndicator);
 
         progressIndicator = new View(context);
         progressIndicator.setLayoutParams(new ViewGroup.LayoutParams(0, 80));
@@ -108,6 +114,14 @@ public class SimplexController extends RelativeLayout implements View.OnTouchLis
         params.width = percentWidth;
         progressIndicator.setLayoutParams(params);
 
+    }
+
+    public void setBufferIndicatorPercent (float percent) {
+        int measuredWidth = progressHolder.getMeasuredWidth();
+        int percentWidth = (int) (percent * measuredWidth);
+        ViewGroup.LayoutParams params = bufferIndicator.getLayoutParams();
+        params.width = percentWidth;
+        bufferIndicator.setLayoutParams(params);
     }
 
     @Override

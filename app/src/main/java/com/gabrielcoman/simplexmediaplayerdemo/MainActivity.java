@@ -33,7 +33,6 @@ public class MainActivity extends AppCompatActivity {
             manager.beginTransaction()
                     .add(R.id.PlayerHolder, myPlayer, myPlayerTag)
                     .commitAllowingStateLoss();
-
         }
         else {
             myPlayer = (Simplex) manager.findFragmentByTag(myPlayerTag);
@@ -54,19 +53,21 @@ public class MainActivity extends AppCompatActivity {
 
     public void playMedia1 (View view) {
 
-        SAFileDownloader.getInstance().downloadFileFrom(MainActivity.this, url1, new SAFileDownloaderInterface() {
-            @Override
-            public void saDidDownloadFile(boolean success, final String filePath) {
-                myPlayer.setMediaFile(filePath);
-            }
-        });
+        myPlayer.setMedia(url1);
+//
+//        SAFileDownloader.getInstance().downloadFileFrom(MainActivity.this, url1, new SAFileDownloaderInterface() {
+//            @Override
+//            public void saDidDownloadFile(boolean success, final String filePath) {
+//                myPlayer.setMediaFile(filePath);
+//            }
+//        });
     }
 
     public void playMedia2 (View view) {
         SAFileDownloader.getInstance().downloadFileFrom(MainActivity.this, url2, new SAFileDownloaderInterface() {
             @Override
             public void saDidDownloadFile(boolean b, String s) {
-                myPlayer.setMediaFile(s);
+                myPlayer.setMedia(s);
             }
         });
     }

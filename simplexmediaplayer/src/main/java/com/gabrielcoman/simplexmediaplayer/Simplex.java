@@ -2,16 +2,17 @@ package com.gabrielcoman.simplexmediaplayer;
 
 import android.app.Activity;
 import android.app.Fragment;
-import android.content.res.AssetFileDescriptor;
 import android.graphics.Color;
-import android.media.MediaDataSource;
 import android.media.MediaPlayer;
+import android.media.TimedMetaData;
+import android.media.TimedText;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.Nullable;
 import android.util.Log;
+import android.util.Patterns;
 import android.view.LayoutInflater;
 import android.view.SurfaceHolder;
 import android.view.View;
@@ -29,6 +30,7 @@ public class Simplex extends Fragment implements
         MediaPlayer.OnPreparedListener,
         MediaPlayer.OnErrorListener,
         MediaPlayer.OnCompletionListener,
+        MediaPlayer.OnBufferingUpdateListener,
         View.OnClickListener,
         SimplexController.ProgressIndicatorInterface
 {
@@ -45,7 +47,6 @@ public class Simplex extends Fragment implements
     private int mTotalDuration = 1;
 
     private boolean isPrepared = false;
-    private String mMediaFileToPlay = null;
 
     public enum PlaybackState {
         NOTSTARTED,
@@ -59,13 +60,6 @@ public class Simplex extends Fragment implements
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // Fragment
     ////////////////////////////////////////////////////////////////////////////////////////////////
-
-    public Simplex () {
-//        mediaPlayer = new MediaPlayer();
-//        mediaPlayer.setOnPreparedListener(this);
-//        mediaPlayer.setOnErrorListener(this);
-//        mediaPlayer.setOnCompletionListener(this);
-    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -159,20 +153,18 @@ public class Simplex extends Fragment implements
         isPrepared = true;
 
         if (mediaPlayer != null) {
-////
-////            Log.d("SIMPLEX", "Holder here is " + holder);
-////
+
             mediaPlayer.setDisplay(holder);
-//////
+
             try {
                 mediaPlayer.prepare();
             } catch (Exception e) {
                 e.printStackTrace();
             }
-////
+
             videoView.setVideoSize(mediaPlayer.getVideoWidth(), mediaPlayer.getVideoHeight());
             videoView.resizeToContainer(videoHolder.getMeasuredWidth(), videoHolder.getMeasuredHeight());
-//
+
         }
     }
 
@@ -205,8 +197,6 @@ public class Simplex extends Fragment implements
     @Override
     public void onPrepared(MediaPlayer mp) {
 
-        Log.d("SIMPLEX", "Duration " + mp.getDuration() + " , " + mp.getVideoWidth() + " CPOS " + mCurrentSeekPos);
-
         switch (state) {
 
             case AUTOSTART:
@@ -235,11 +225,18 @@ public class Simplex extends Fragment implements
         mp.pause();
         state = PlaybackState.REWIND;
         controller.setPlaybackButtonForState(state);
+
     }
 
     @Override
     public boolean onError(MediaPlayer mp, int what, int extra) {
         return false;
+    }
+
+    @Override
+    public void onBufferingUpdate(MediaPlayer mp, int percent) {
+        float p = percent / 100.0F;
+        controller.setBufferIndicatorPercent(p);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -283,12 +280,10 @@ public class Simplex extends Fragment implements
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    // Control Methods
+    // Set data files
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public void setMediaFile(String path) {
-
-        mMediaFileToPlay = path;
+    public void setMedia (final String mediaName) {
 
         mediaHandler = new Handler(Looper.getMainLooper());
         mediaHandler.postDelayed(new Runnable() {
@@ -300,7 +295,7 @@ public class Simplex extends Fragment implements
                 } else {
 
                     try {
-                        prepareMedia(mMediaFileToPlay);
+                        prepareMedia (mediaName);
                     } catch (Throwable throwable) {
                         throwable.printStackTrace();
                     }
@@ -309,59 +304,60 @@ public class Simplex extends Fragment implements
         }, 250);
     }
 
-    private void prepareMedia (String path) throws Throwable {
+    private void prepareMedia (String mediaName) throws Throwable {
 
-        if (path == null) {
-            throw new Exception("No media file set to play. Please use 'setMediaFile' to set a valid file path");
+        Activity context = getActivity();
+
+        if (context == null) {
+            throw new Exception("Fragment not prepared yet!");
         }
         else {
-            Activity current = getActivity();
-            if (current == null) {
-                throw new Exception("Fragment not prepared yet!");
+            String mediaUrl = null;
+
+            File file = new File(context.getFilesDir(), mediaName);
+            if (file.exists()) {
+                mediaUrl = file.toString();
+            } else if (Patterns.WEB_URL.matcher(mediaName).matches()){
+                mediaUrl = mediaName;
+            } else {
+                throw new Exception("Media inputted is neither a valid file on disk or a remote url!");
             }
-            else {
-                File file = new File(current.getFilesDir(), path);
-                Log.d("SuperAwesome", "FILE IS: file://" + Uri.parse(file.toString()).toString());
-                if (!file.exists()) {
-                    throw new Exception("File " + path + " does not exist on disk. Will not set this media file!");
-                }
-                else {
-                    String videoURL = file.toString();
 
-                    if (mediaPlayer == null) {
+            if (mediaPlayer == null) {
 
-                        mediaPlayer = new MediaPlayer();
-                        mediaPlayer.setDisplay(videoView.getHolder());
-                        mediaPlayer.setOnPreparedListener(this);
-                        mediaPlayer.setOnErrorListener(this);
-                        mediaPlayer.setOnCompletionListener(this);
-                    } else {
-                        mediaPlayer.reset();
-                    }
-
-                    mCurrentSeekPos = 0;
-
-                    try {
-                        mediaPlayer.setDataSource(current, Uri.parse(videoURL));
-                    } catch (IllegalArgumentException | SecurityException | IllegalStateException | IOException e) {
-                        e.printStackTrace();
-                    }
-
-                    try {
-                        mediaPlayer.prepare();
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-
-                    mTotalDuration = mediaPlayer.getDuration();
-                    videoView.setVideoSize(mediaPlayer.getVideoWidth(), mediaPlayer.getVideoHeight());
-                    videoView.resizeToContainer(videoHolder.getMeasuredWidth(), videoHolder.getMeasuredHeight());
-
-                    Log.d("SIMPLEX", "Duration " + mediaPlayer.getDuration() + " , " + mediaPlayer.getVideoWidth());
-                }
+                mediaPlayer = new MediaPlayer();
+                mediaPlayer.setDisplay(videoView.getHolder());
+                mediaPlayer.setOnPreparedListener(this);
+                mediaPlayer.setOnErrorListener(this);
+                mediaPlayer.setOnCompletionListener(this);
+                mediaPlayer.setOnBufferingUpdateListener(this);
+            } else {
+                mediaPlayer.reset();
             }
+
+            mCurrentSeekPos = 0;
+
+            try {
+                mediaPlayer.setDataSource(mediaUrl);
+            } catch (IllegalArgumentException | SecurityException | IllegalStateException | IOException e) {
+                e.printStackTrace();
+            }
+
+            try {
+                mediaPlayer.prepare();
+            } catch (IOException | IllegalStateException e) {
+                e.printStackTrace();
+            }
+
+            mTotalDuration = mediaPlayer.getDuration();
+            videoView.setVideoSize(mediaPlayer.getVideoWidth(), mediaPlayer.getVideoHeight());
+            videoView.resizeToContainer(videoHolder.getMeasuredWidth(), videoHolder.getMeasuredHeight());
         }
     }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // Internal control Methods
+    ////////////////////////////////////////////////////////////////////////////////////////////////
 
     private void play (int position) {
         if (mediaPlayer != null) {
