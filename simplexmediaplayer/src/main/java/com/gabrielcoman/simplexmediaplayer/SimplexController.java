@@ -3,21 +3,34 @@ package com.gabrielcoman.simplexmediaplayer;
 import android.content.Context;
 import android.graphics.Color;
 import android.util.AttributeSet;
-import android.util.Log;
+import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
+
+import com.gabrielcoman.simplexmediaplayer.aux.image.SimplexBitmap;
 
 public class SimplexController extends RelativeLayout implements View.OnTouchListener {
 
-    private Button startButton;
-    private RelativeLayout controller;
+    // some constants
+    private static final int CONTROLLER_HEIGHT = 80;
+    private static final int MASK_HEIGHT = (int) (1.25F * CONTROLLER_HEIGHT);
+
     private Button playbackButton;
+
+    private RelativeLayout controller;
     private RelativeLayout progressHolder;
     private View progressIndicator;
     private View bufferIndicator;
+
+    private ImageView mask;
+
+    private TextView currentTime;
+    private TextView totalTime;
 
     private ProgressIndicatorInterface listener;
 
@@ -34,41 +47,65 @@ public class SimplexController extends RelativeLayout implements View.OnTouchLis
     public SimplexController(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
 
-        startButton = new Button(context);
-        RelativeLayout.LayoutParams startButtonParams = new RelativeLayout.LayoutParams(100, 100);
-        startButtonParams.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
-        startButton.setLayoutParams(startButtonParams);
-        startButton.setBackgroundColor(Color.GREEN);
-        startButton.setText(">");
-        addView(startButton);
+        playbackButton = new Button(context);
+        RelativeLayout.LayoutParams startButtonParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        startButtonParams.setMargins(0, 0, 0, CONTROLLER_HEIGHT);
+        playbackButton.setLayoutParams(startButtonParams);
+        playbackButton.setBackgroundColor(Color.TRANSPARENT);
+        playbackButton.setText(">");
+        playbackButton.setTextColor(Color.WHITE);
+        playbackButton.setTextSize(48);
+        addView(playbackButton);
+
+        mask = new ImageView(context);
+        mask.setImageBitmap(SimplexBitmap.createVideoGradientBitmap());
+        RelativeLayout.LayoutParams backgroundParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, MASK_HEIGHT);
+        backgroundParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+        mask.setLayoutParams(backgroundParams);
+        mask.setScaleType(ImageView.ScaleType.FIT_XY);
+        addView(mask);
 
         controller = new RelativeLayout(context);
-        RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 100);
+        RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, CONTROLLER_HEIGHT);
         layoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
         controller.setLayoutParams(layoutParams);
-        controller.setBackgroundColor(Color.BLUE);
+        controller.setBackgroundColor(Color.TRANSPARENT);
+        controller.setOnTouchListener(this);
         addView(controller);
 
-        playbackButton = new Button(context);
-        playbackButton.setBackgroundColor(Color.GREEN);
-        playbackButton.setLayoutParams(new ViewGroup.LayoutParams(100, 100));
-        controller.addView(playbackButton);
+        currentTime = new TextView(context);
+        currentTime.setBackgroundColor(Color.TRANSPARENT);
+        currentTime.setLayoutParams(new ViewGroup.LayoutParams(100, ViewGroup.LayoutParams.MATCH_PARENT));
+        currentTime.setText("00:00");
+        currentTime.setTextColor(Color.WHITE);
+        currentTime.setGravity(Gravity.CENTER);
+        controller.addView(currentTime);
 
         progressHolder = new RelativeLayout(context);
         RelativeLayout.LayoutParams layoutParams1 = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-        layoutParams1.setMargins(110, 10, 10, 10);
+        layoutParams1.setMargins(110, 10, 110, 10);
         progressHolder.setLayoutParams(layoutParams1);
         progressHolder.setBackgroundColor(Color.MAGENTA);
         progressHolder.setOnTouchListener(this);
         controller.addView(progressHolder);
 
+        totalTime = new TextView(context);
+        totalTime.setBackgroundColor(Color.TRANSPARENT);
+        RelativeLayout.LayoutParams totalTimeParams = new RelativeLayout.LayoutParams(100, ViewGroup.LayoutParams.MATCH_PARENT);
+        totalTimeParams.addRule(ALIGN_PARENT_RIGHT, RelativeLayout.TRUE);
+        totalTime.setLayoutParams(totalTimeParams);
+        totalTime.setText("00:00");
+        totalTime.setTextColor(Color.WHITE);
+        totalTime.setGravity(Gravity.CENTER);
+        controller.addView(totalTime);
+
         bufferIndicator = new View(context);
-        bufferIndicator.setLayoutParams(new ViewGroup.LayoutParams(0, 80));
+        bufferIndicator.setLayoutParams(new ViewGroup.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT));
         bufferIndicator.setBackgroundColor(Color.CYAN);
         progressHolder.addView(bufferIndicator);
 
         progressIndicator = new View(context);
-        progressIndicator.setLayoutParams(new ViewGroup.LayoutParams(0, 80));
+        progressIndicator.setLayoutParams(new ViewGroup.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT));
         progressIndicator.setBackgroundColor(Color.YELLOW);
         progressHolder.addView(progressIndicator);
 
@@ -76,10 +113,6 @@ public class SimplexController extends RelativeLayout implements View.OnTouchLis
 
     public void setPlaybackButtonClickListener(OnClickListener listener) {
         playbackButton.setOnClickListener(listener);
-    }
-
-    public void setStartButtonClickListener(OnClickListener listener) {
-        startButton.setOnClickListener(listener);
     }
 
     public void setPlaybackButtonForState (Simplex.PlaybackState state) {
@@ -92,7 +125,7 @@ public class SimplexController extends RelativeLayout implements View.OnTouchLis
             }
             case AUTOSTART:
             case PLAYING: {
-                playbackButton.setText("||");
+                playbackButton.setText(" ");
                 break;
             }
             case REWIND: {
@@ -100,10 +133,6 @@ public class SimplexController extends RelativeLayout implements View.OnTouchLis
                 break;
             }
         }
-    }
-
-    public void hideStartButton (boolean hidden) {
-        startButton.setVisibility(hidden ? GONE : VISIBLE);
     }
 
     public void setPlaybackIndicatorPercent (float percent) {
@@ -124,6 +153,14 @@ public class SimplexController extends RelativeLayout implements View.OnTouchLis
         bufferIndicator.setLayoutParams(params);
     }
 
+    public void setTotalTimeText (String text) {
+        totalTime.setText(text);
+    }
+
+    public void setCurrentTime (String text) {
+        currentTime.setText(text);
+    }
+
     @Override
     public boolean onTouch(View v, MotionEvent event) {
 
@@ -133,6 +170,7 @@ public class SimplexController extends RelativeLayout implements View.OnTouchLis
         percent = percent > 1 ? 1 : percent;
         percent = percent < 0 ? 0 : percent;
         listener.shouldAdvanceToStep(percent);
+
         return false;
     }
 

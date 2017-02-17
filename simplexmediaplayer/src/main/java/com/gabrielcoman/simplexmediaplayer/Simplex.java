@@ -4,9 +4,6 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.graphics.Color;
 import android.media.MediaPlayer;
-import android.media.TimedMetaData;
-import android.media.TimedText;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -20,8 +17,9 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
 
+import com.gabrielcoman.simplexmediaplayer.aux.time.SimplexTime;
+
 import java.io.File;
-import java.io.FileDescriptor;
 import java.io.IOException;
 
 public class Simplex extends Fragment implements
@@ -47,6 +45,7 @@ public class Simplex extends Fragment implements
     private int mTotalDuration = 1;
 
     private boolean isPrepared = false;
+    private boolean isFirstTime = true;
 
     public enum PlaybackState {
         NOTSTARTED,
@@ -76,16 +75,19 @@ public class Simplex extends Fragment implements
                         controller.setPlaybackIndicatorPercent(1.0F);
                     }
                 } else {
-                    float percent;
+                    int currentTime;
 
                     try {
-                        percent = mediaPlayer.getCurrentPosition() / (float) mTotalDuration;
+                        currentTime = mediaPlayer.getCurrentPosition();
                     } catch (Exception e) {
-                        percent = mCurrentSeekPos / (float) mTotalDuration;
+                        currentTime = mCurrentSeekPos;
                     }
+
+                    float percent = currentTime / (float) mTotalDuration;
 
                     try {
                         controller.setPlaybackIndicatorPercent(percent);
+                        controller.setCurrentTime(SimplexTime.getTimeString(currentTime));
                     } catch (Exception e) {
                         // do nothing
                     }
@@ -106,7 +108,7 @@ public class Simplex extends Fragment implements
             // create the video holder
             videoHolder = new SimplexHolder(getActivity());
             videoHolder.setLayoutParams(new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
-            videoHolder.setBackgroundColor(Color.RED);
+            videoHolder.setBackgroundColor(Color.BLACK);
             videoHolder.setListener(this);
 
             // create the video view
@@ -117,10 +119,8 @@ public class Simplex extends Fragment implements
             // create the controller
             controller = new SimplexController(getActivity());
             controller.setLayoutParams(new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-            controller.hideStartButton(state == PlaybackState.AUTOSTART);
             controller.setPlaybackButtonForState(state);
             controller.setPlaybackButtonClickListener(Simplex.this);
-            controller.setStartButtonClickListener(Simplex.this);
             controller.setListener(this);
             videoHolder.addView(controller);
 
@@ -312,7 +312,14 @@ public class Simplex extends Fragment implements
             throw new Exception("Fragment not prepared yet!");
         }
         else {
-            String mediaUrl = null;
+
+            if (isFirstTime) {
+                isFirstTime = false;
+            } else {
+                state = PlaybackState.PLAYING;
+            }
+
+            String mediaUrl;
 
             File file = new File(context.getFilesDir(), mediaName);
             if (file.exists()) {
@@ -350,6 +357,7 @@ public class Simplex extends Fragment implements
             }
 
             mTotalDuration = mediaPlayer.getDuration();
+            controller.setTotalTimeText(SimplexTime.getTimeString(mTotalDuration));
             videoView.setVideoSize(mediaPlayer.getVideoWidth(), mediaPlayer.getVideoHeight());
             videoView.resizeToContainer(videoHolder.getMeasuredWidth(), videoHolder.getMeasuredHeight());
         }
@@ -363,7 +371,6 @@ public class Simplex extends Fragment implements
         if (mediaPlayer != null) {
             state = PlaybackState.PLAYING;
             controller.setPlaybackButtonForState(state);
-            controller.hideStartButton(true);
             mediaPlayer.seekTo(position);
             mediaPlayer.start();
         }

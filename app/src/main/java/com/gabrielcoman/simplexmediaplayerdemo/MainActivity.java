@@ -52,15 +52,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void playMedia1 (View view) {
-
         myPlayer.setMedia(url1);
-//
-//        SAFileDownloader.getInstance().downloadFileFrom(MainActivity.this, url1, new SAFileDownloaderInterface() {
-//            @Override
-//            public void saDidDownloadFile(boolean success, final String filePath) {
-//                myPlayer.setMediaFile(filePath);
-//            }
-//        });
     }
 
     public void playMedia2 (View view) {
