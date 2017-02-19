@@ -12,11 +12,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
-import com.gabrielcoman.simplexmediaplayer.aux.image.SimplexBitmap;
 import com.gabrielcoman.simplexmediaplayer.aux.style.SimplexStyle;
 
 public class SimplexController extends RelativeLayout implements
@@ -25,14 +25,16 @@ public class SimplexController extends RelativeLayout implements
 
     // some constants
     private static final int    CONTROLLER_HEIGHT = 80;
-    private static final int    INDICATOR_HEIGHT = 30;
+    private static final int    HOLDER_HEIGHT = 30;
+    private static final int    INDICATOR_HEIGHT = 10;
 
-    private ImageButton         buttonPlayback;
     private View                fullscreenMask;
+    private ImageButton         buttonPlayback;
 
-    private ImageView           mask;
+    private ImageView           bottomGradientMask;
 
     private RelativeLayout      indicatorBackground;
+    private LinearLayout        indicatorLinear;
     private RelativeLayout      indicatorHolder;
     private SeekBar             indicatorSeekBar;
     private View                indicatorLength;
@@ -42,7 +44,7 @@ public class SimplexController extends RelativeLayout implements
     private TextView            indicatorCurrentTime;
     private TextView            indicatorTotalTime;
 
-    private SimplexStyle        controllerStyle;
+    private SimplexStyle        style;
 
     private boolean             userControlsPlayback = false;
 
@@ -69,106 +71,137 @@ public class SimplexController extends RelativeLayout implements
         super(context, attrs, defStyleAttr);
 
         // set a new style
-        controllerStyle = SimplexStyle.normalStyle();
+        style = SimplexStyle.normalStyle();
 
         fullscreenMask = new View(context);
-        fullscreenMask.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        ViewGroup.LayoutParams fullscreenMaskParams =
+                new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        fullscreenMask.setLayoutParams(fullscreenMaskParams);
         fullscreenMask.setVisibility(GONE);
-        fullscreenMask.setBackgroundColor(Color.BLACK);
-        fullscreenMask.setAlpha(0.25F);
-        addView(fullscreenMask);
+        fullscreenMask.setBackgroundColor(style.getFullscreenMaskBgColor());
+        fullscreenMask.setAlpha(style.getFullscreenMaskAlpha());
+        if (style.isHasFullscreenMask()) {
+            addView(fullscreenMask);
+        }
 
         buttonPlayback = new ImageButton(context);
-        RelativeLayout.LayoutParams startButtonParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        RelativeLayout.LayoutParams startButtonParams =
+                new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         startButtonParams.setMargins(0, 0, 0, CONTROLLER_HEIGHT);
         buttonPlayback.setLayoutParams(startButtonParams);
+        buttonPlayback.setPadding(0, CONTROLLER_HEIGHT, 0, 0);
         buttonPlayback.setBackgroundColor(Color.TRANSPARENT);
-        buttonPlayback.setImageBitmap(SimplexBitmap.createPlayButtonBitmap());
+        buttonPlayback.setImageBitmap(style.getButtonPlaybackPlayBitmap());
         addView(buttonPlayback);
 
-        mask = new ImageView(context);
-        mask.setImageBitmap(SimplexBitmap.createVideoGradientBitmap());
-        RelativeLayout.LayoutParams backgroundParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, CONTROLLER_HEIGHT);
-        backgroundParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
-        mask.setLayoutParams(backgroundParams);
-        mask.setScaleType(ImageView.ScaleType.FIT_XY);
-        addView(mask);
+        bottomGradientMask = new ImageView(context);
+        bottomGradientMask.setImageBitmap(style.getBottomGradientMaskBitmap());
+        RelativeLayout.LayoutParams bottomGradientParams =
+                new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, CONTROLLER_HEIGHT);
+        bottomGradientParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+        bottomGradientMask.setLayoutParams(bottomGradientParams);
+        bottomGradientMask.setScaleType(ImageView.ScaleType.FIT_XY);
+        addView(bottomGradientMask);
 
         indicatorBackground = new RelativeLayout(context);
-        RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, CONTROLLER_HEIGHT);
-        layoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
-        indicatorBackground.setLayoutParams(layoutParams);
-        indicatorBackground.setBackgroundColor(controllerStyle.getIndicatorBackgroundBgColor());
+        RelativeLayout.LayoutParams indicatorBackgroundParams =
+                new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, CONTROLLER_HEIGHT);
+        indicatorBackgroundParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+        indicatorBackground.setLayoutParams(indicatorBackgroundParams);
+        indicatorBackground.setBackgroundColor(style.getIndicatorBackgroundBgColor());
         addView(indicatorBackground);
 
+        indicatorLinear = new LinearLayout(context);
+        LinearLayout.LayoutParams indicatorLinearParams =
+                new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        indicatorLinear.setOrientation(LinearLayout.HORIZONTAL);
+        indicatorLinear.setLayoutParams(indicatorLinearParams);
+        indicatorLinear.setBackgroundColor(Color.TRANSPARENT);
+        indicatorBackground.addView(indicatorLinear);
+
         indicatorCurrentTime = new TextView(context);
-        RelativeLayout.LayoutParams indicatorCurrentTimeParams = new RelativeLayout.LayoutParams(100, ViewGroup.LayoutParams.MATCH_PARENT);
+        LinearLayout.LayoutParams indicatorCurrentTimeParams =
+                new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        indicatorCurrentTimeParams.weight = 1;
         indicatorCurrentTime.setLayoutParams(indicatorCurrentTimeParams);
         indicatorCurrentTime.setGravity(Gravity.CENTER);
         indicatorCurrentTime.setText("00:00");
-        indicatorCurrentTime.setBackgroundColor(controllerStyle.getIndicatorCurrentTimeBgColor());
-        indicatorCurrentTime.setTextColor(controllerStyle.getIndicatorCurrentTimeTxtColor());
-        indicatorBackground.addView(indicatorCurrentTime);
+        indicatorCurrentTime.setPadding(15, 10, 15, 10);
+        indicatorCurrentTime.setBackgroundColor(style.getIndicatorCurrentTimeBgColor());
+        indicatorCurrentTime.setTextColor(style.getIndicatorCurrentTimeTxtColor());
+        indicatorLinear.addView(indicatorCurrentTime);
 
         indicatorHolder = new RelativeLayout(context);
-        RelativeLayout.LayoutParams indicatorHolderParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, INDICATOR_HEIGHT);
-        int verticalMargin = (int)((CONTROLLER_HEIGHT - INDICATOR_HEIGHT) / 2.0F);
-        indicatorHolderParams.setMargins(110, verticalMargin, 110, verticalMargin);
+        LinearLayout.LayoutParams indicatorHolderParams =
+                new LinearLayout.LayoutParams(0, HOLDER_HEIGHT);
+        indicatorHolderParams.weight = 50;
+        int holderVMargin = (int)((CONTROLLER_HEIGHT - HOLDER_HEIGHT) / 2.0F);
+        indicatorHolderParams.setMargins(0, holderVMargin, 0, holderVMargin);
         indicatorHolder.setLayoutParams(indicatorHolderParams);
         indicatorHolder.setBackgroundColor(Color.TRANSPARENT);
-        indicatorBackground.addView(indicatorHolder);
+        indicatorLinear.addView(indicatorHolder);
 
         indicatorLength = new View(context);
-        RelativeLayout.LayoutParams indicatorLengthParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-        indicatorLengthParams.setMargins(15, 10, 15, 10);
+        RelativeLayout.LayoutParams indicatorLengthParams =
+                new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        int lengthVMargin = (int)((HOLDER_HEIGHT - INDICATOR_HEIGHT) / 2.0F);
+        int lengthHMargin = (int) (HOLDER_HEIGHT / 2.0F);
+        indicatorLengthParams.setMargins(lengthHMargin, lengthVMargin, lengthHMargin, lengthVMargin);
         indicatorLength.setLayoutParams(indicatorLengthParams);
-        indicatorLength.setBackgroundColor(controllerStyle.getIndicatorLengthBgColor());
-        indicatorLength.setAlpha(controllerStyle.getIndicatorLengthAlpha());
+        indicatorLength.setBackgroundColor(style.getIndicatorLengthBgColor());
+        indicatorLength.setAlpha(style.getIndicatorLengthAlpha());
         indicatorHolder.addView(indicatorLength);
 
         indicatorBuffer = new View(context);
         RelativeLayout.LayoutParams indicatorBufferParams = new RelativeLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT);
-        indicatorBufferParams.setMargins(15, 10, 15, 10);
+        int bufferVMargin = (int)((HOLDER_HEIGHT - INDICATOR_HEIGHT) / 2.0F);
+        int bufferHMargin = (int) (HOLDER_HEIGHT / 2.0F);
+        indicatorBufferParams.setMargins(bufferHMargin, bufferVMargin, bufferHMargin, bufferVMargin);
         indicatorBuffer.setLayoutParams(indicatorBufferParams);
-        indicatorBuffer.setBackgroundColor(controllerStyle.getIndicatorBufferBgColor());
-        indicatorBuffer.setAlpha(controllerStyle.getIndicatorBufferAlpha());
+        indicatorBuffer.setBackgroundColor(style.getIndicatorBufferBgColor());
+        indicatorBuffer.setAlpha(style.getIndicatorBufferAlpha());
         indicatorHolder.addView(indicatorBuffer);
 
         indicatorSeekBar = new SeekBar(context);
         indicatorSeekBar.setBackgroundColor(Color.TRANSPARENT);
-        indicatorSeekBar.setPadding(15, 0, 15, 0);
+        int seekbarHMargin = (int) (HOLDER_HEIGHT / 2.0F);
+        indicatorSeekBar.setPadding(seekbarHMargin, 0, seekbarHMargin, 0);
         RelativeLayout.LayoutParams indicatorSeekBarParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         indicatorSeekBarParams.addRule(CENTER_VERTICAL, RelativeLayout.TRUE);
         indicatorSeekBarParams.setMargins(0, 0, 0, 0);
         indicatorSeekBar.getProgressDrawable().setColorFilter(new PorterDuffColorFilter(Color.TRANSPARENT, PorterDuff.Mode.SRC_IN));
         indicatorSeekBar.setLayoutParams(indicatorSeekBarParams);
-        indicatorSeekBar.setMinimumHeight(INDICATOR_HEIGHT);
+        indicatorSeekBar.setMinimumHeight(HOLDER_HEIGHT);
         indicatorSeekBar.setOnSeekBarChangeListener(this);
         indicatorHolder.addView(indicatorSeekBar);
 
         ShapeDrawable thumb = new ShapeDrawable(new OvalShape());
 
-        thumb.setIntrinsicHeight(30);
-        thumb.setIntrinsicWidth(30);
-        thumb.setColorFilter(Color.RED, PorterDuff.Mode.ADD);
+        thumb.setIntrinsicHeight(HOLDER_HEIGHT);
+        thumb.setIntrinsicWidth(HOLDER_HEIGHT);
+        thumb.setColorFilter(style.getIndicatorPlaybackBgColor(), PorterDuff.Mode.ADD);
         indicatorSeekBar.setThumb(thumb);
 
         indicatorPlayback = new View(context);
         RelativeLayout.LayoutParams indicatorPlaybackParams = new RelativeLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT);
-        indicatorPlaybackParams.setMargins(15, 10, 15, 10);
+        int playbackVMargin = (int)((HOLDER_HEIGHT - INDICATOR_HEIGHT) / 2.0F);
+        int playbackHMargin = (int) (HOLDER_HEIGHT / 2.0F);
+        indicatorPlaybackParams.setMargins(playbackHMargin, playbackVMargin, playbackHMargin, playbackVMargin);
         indicatorPlayback.setLayoutParams(indicatorPlaybackParams);
-        indicatorPlayback.setBackgroundColor(controllerStyle.getIndicatorPlaybackBgColor());
+        indicatorPlayback.setBackgroundColor(style.getIndicatorPlaybackBgColor());
         indicatorHolder.addView(indicatorPlayback);
 
         indicatorTotalTime = new TextView(context);
-        RelativeLayout.LayoutParams indicatorTotalTimeParams = new RelativeLayout.LayoutParams(100, ViewGroup.LayoutParams.MATCH_PARENT);
-        indicatorTotalTimeParams.addRule(ALIGN_PARENT_RIGHT, RelativeLayout.TRUE);
+        LinearLayout.LayoutParams indicatorTotalTimeParams =
+                new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        indicatorTotalTimeParams.weight = 1;
         indicatorTotalTime.setLayoutParams(indicatorTotalTimeParams);
         indicatorTotalTime.setGravity(Gravity.CENTER);
         indicatorTotalTime.setText("00:00");
-        indicatorTotalTime.setBackgroundColor(controllerStyle.getIndicatorTotalTimeBgColor());
-        indicatorTotalTime.setTextColor(controllerStyle.getIndicatorTotalTimeTxtColor());
-        indicatorBackground.addView(indicatorTotalTime);
+        indicatorTotalTime.setPadding(15, 10, 15, 10);
+        indicatorTotalTime.setBackgroundColor(style.getIndicatorTotalTimeBgColor());
+        indicatorTotalTime.setTextColor(style.getIndicatorTotalTimeTxtColor());
+        indicatorLinear.addView(indicatorTotalTime);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -180,7 +213,7 @@ public class SimplexController extends RelativeLayout implements
         switch (state) {
             case NOTSTARTED:
             case PAUSED: {
-                buttonPlayback.setImageBitmap(SimplexBitmap.createPlayButtonBitmap());
+                buttonPlayback.setImageBitmap(style.getButtonPlaybackPlayBitmap());
                 fullscreenMask.setVisibility(VISIBLE);
                 break;
             }
@@ -191,7 +224,7 @@ public class SimplexController extends RelativeLayout implements
                 break;
             }
             case REWIND: {
-                buttonPlayback.setImageBitmap(SimplexBitmap.createReplayButtonBitmap());
+                buttonPlayback.setImageBitmap(style.getButtonPlaybackReplayBitmap());
                 fullscreenMask.setVisibility(VISIBLE);
                 break;
             }
@@ -235,7 +268,7 @@ public class SimplexController extends RelativeLayout implements
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    // SeekBar delegatre methods
+    // SeekBar listener methods
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
@@ -257,7 +290,7 @@ public class SimplexController extends RelativeLayout implements
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    // Set different Listeners methods
+    // Set different listeners methods
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     public void setButtonPlaybackClickListener (OnClickListener listener) {

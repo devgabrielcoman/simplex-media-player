@@ -1,8 +1,20 @@
 package com.gabrielcoman.simplexmediaplayer.aux.style;
 
+import android.graphics.Bitmap;
 import android.graphics.Color;
 
+import com.gabrielcoman.simplexmediaplayer.aux.image.SimplexBitmap;
+
 public class SimplexStyle {
+
+    private boolean hasFullscreenMask               = true;
+    private int     fullscreenMaskBgColor           = Color.BLACK;
+    private float   fullscreenMaskAlpha             = 0.25F;
+
+    private Bitmap  buttonPlaybackPlayBitmap        = SimplexBitmap.createPlayButtonBitmap();
+    private Bitmap  buttonPlaybackReplayBitmap      = SimplexBitmap.createReplayButtonBitmap();
+
+    private Bitmap  bottomGradientMaskBitmap        = SimplexBitmap.createVideoGradientBitmap();
 
     private int     indicatorBackgroundBgColor      = Color.TRANSPARENT;
 
@@ -108,5 +120,53 @@ public class SimplexStyle {
 
     public void setIndicatorBufferAlpha(float indicatorBufferAlpha) {
         this.indicatorBufferAlpha = indicatorBufferAlpha;
+    }
+
+    public boolean isHasFullscreenMask() {
+        return hasFullscreenMask;
+    }
+
+    public void setHasFullscreenMask(boolean hasFullscreenMask) {
+        this.hasFullscreenMask = hasFullscreenMask;
+    }
+
+    public int getFullscreenMaskBgColor() {
+        return fullscreenMaskBgColor;
+    }
+
+    public void setFullscreenMaskBgColor(int fullscreenMaskBgColor) {
+        this.fullscreenMaskBgColor = fullscreenMaskBgColor;
+    }
+
+    public float getFullscreenMaskAlpha() {
+        return fullscreenMaskAlpha;
+    }
+
+    public void setFullscreenMaskAlpha(float fullscreenMaskAlpha) {
+        this.fullscreenMaskAlpha = fullscreenMaskAlpha;
+    }
+
+    public Bitmap getButtonPlaybackPlayBitmap() {
+        return buttonPlaybackPlayBitmap;
+    }
+
+    public void setButtonPlaybackPlayBitmap(Bitmap buttonPlaybackPlayBitmap) {
+        this.buttonPlaybackPlayBitmap = buttonPlaybackPlayBitmap;
+    }
+
+    public Bitmap getButtonPlaybackReplayBitmap() {
+        return buttonPlaybackReplayBitmap;
+    }
+
+    public void setButtonPlaybackReplayBitmap(Bitmap buttonPlaybackReplayBitmap) {
+        this.buttonPlaybackReplayBitmap = buttonPlaybackReplayBitmap;
+    }
+
+    public Bitmap getBottomGradientMaskBitmap() {
+        return bottomGradientMaskBitmap;
+    }
+
+    public void setBottomGradientMaskBitmap(Bitmap bottomGradientMaskBitmap) {
+        this.bottomGradientMaskBitmap = bottomGradientMaskBitmap;
     }
 }
