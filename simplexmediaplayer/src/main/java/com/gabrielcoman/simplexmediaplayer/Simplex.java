@@ -43,6 +43,7 @@ public class Simplex extends Fragment implements
 
     private int mCurrentSeekPos = 0;
     private int mTotalDuration = 1;
+    private int mBufferPercent = 0;
 
     private boolean isPrepared = false;
     private boolean isFirstTime = true;
@@ -72,7 +73,7 @@ public class Simplex extends Fragment implements
 
                 if (state == PlaybackState.REWIND) {
                     if (controller != null) {
-                        controller.setPlaybackIndicatorPercent(1.0F);
+                        controller.updateIndicatorPlaybackForProgress(1.0F);
                     }
                 } else {
                     int currentTime;
@@ -83,11 +84,14 @@ public class Simplex extends Fragment implements
                         currentTime = mCurrentSeekPos;
                     }
 
-                    float percent = currentTime / (float) mTotalDuration;
+                    float playbackPercent = currentTime / (float) mTotalDuration;
+                    float bufferPercent = mBufferPercent / 100.0F;
 
                     try {
-                        controller.setPlaybackIndicatorPercent(percent);
-                        controller.setCurrentTime(SimplexTime.getTimeString(currentTime));
+                        controller.updateIndicatorPlaybackForProgress(playbackPercent);
+                        controller.updateIndicatorSeekBarForProgress(playbackPercent);
+                        controller.updateInficatorCurrentTime(SimplexTime.getTimeString(currentTime));
+                        controller.updateIndicatorBufferForProgress(bufferPercent);
                     } catch (Exception e) {
                         // do nothing
                     }
@@ -119,8 +123,8 @@ public class Simplex extends Fragment implements
             // create the controller
             controller = new SimplexController(getActivity());
             controller.setLayoutParams(new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-            controller.setPlaybackButtonForState(state);
-            controller.setPlaybackButtonClickListener(Simplex.this);
+            controller.updateButtonPlaybackForState(state);
+            controller.setButtonPlaybackClickListener(Simplex.this);
             controller.setListener(this);
             videoHolder.addView(controller);
 
@@ -224,7 +228,7 @@ public class Simplex extends Fragment implements
 
         mp.pause();
         state = PlaybackState.REWIND;
-        controller.setPlaybackButtonForState(state);
+        controller.updateButtonPlaybackForState(state);
 
     }
 
@@ -235,8 +239,7 @@ public class Simplex extends Fragment implements
 
     @Override
     public void onBufferingUpdate(MediaPlayer mp, int percent) {
-        float p = percent / 100.0F;
-        controller.setBufferIndicatorPercent(p);
+        mBufferPercent = percent;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -273,8 +276,19 @@ public class Simplex extends Fragment implements
     public void shouldAdvanceToStep(float percent) {
 
         if (mediaPlayer != null) {
+
+            // calc the new position
             int cPosition = (int) (percent * mTotalDuration);
+
+            // play to the calculated position
             play(cPosition);
+
+            // do a force update of the playback indicator
+            try {
+                controller.updateIndicatorPlaybackForProgress(percent);
+            } catch (Exception e) {
+                // do nothing
+            }
         }
 
     }
@@ -324,8 +338,10 @@ public class Simplex extends Fragment implements
             File file = new File(context.getFilesDir(), mediaName);
             if (file.exists()) {
                 mediaUrl = file.toString();
+                mBufferPercent = 100;
             } else if (Patterns.WEB_URL.matcher(mediaName).matches()){
                 mediaUrl = mediaName;
+                mBufferPercent = 0;
             } else {
                 throw new Exception("Media inputted is neither a valid file on disk or a remote url!");
             }
@@ -357,7 +373,7 @@ public class Simplex extends Fragment implements
             }
 
             mTotalDuration = mediaPlayer.getDuration();
-            controller.setTotalTimeText(SimplexTime.getTimeString(mTotalDuration));
+            controller.updateIndicatorTotalTime(SimplexTime.getTimeString(mTotalDuration));
             videoView.setVideoSize(mediaPlayer.getVideoWidth(), mediaPlayer.getVideoHeight());
             videoView.resizeToContainer(videoHolder.getMeasuredWidth(), videoHolder.getMeasuredHeight());
         }
@@ -370,7 +386,7 @@ public class Simplex extends Fragment implements
     private void play (int position) {
         if (mediaPlayer != null) {
             state = PlaybackState.PLAYING;
-            controller.setPlaybackButtonForState(state);
+            controller.updateButtonPlaybackForState(state);
             mediaPlayer.seekTo(position);
             mediaPlayer.start();
         }
@@ -380,7 +396,7 @@ public class Simplex extends Fragment implements
         if (mediaPlayer != null) {
             state = PlaybackState.PAUSED;
             mCurrentSeekPos = mediaPlayer.getCurrentPosition();
-            controller.setPlaybackButtonForState(state);
+            controller.updateButtonPlaybackForState(state);
             mediaPlayer.pause();
         }
     }
