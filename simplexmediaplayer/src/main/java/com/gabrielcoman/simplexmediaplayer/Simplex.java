@@ -17,6 +17,7 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
 
+import com.gabrielcoman.simplexmediaplayer.aux.style.SimplexStyle;
 import com.gabrielcoman.simplexmediaplayer.aux.time.SimplexTime;
 
 import java.io.File;
@@ -47,6 +48,10 @@ public class Simplex extends Fragment implements
 
     private boolean isPrepared = false;
     private boolean isFirstTime = true;
+
+    private SimplexStyle style = new SimplexStyle();
+
+    private boolean isControllerVisible = true;
 
     public enum PlaybackState {
         NOTSTARTED,
@@ -126,6 +131,8 @@ public class Simplex extends Fragment implements
             controller.updateButtonPlaybackForState(state);
             controller.setButtonPlaybackClickListener(Simplex.this);
             controller.setListener(this);
+            controller.setStyle(style);
+            controller.setVisibility(isControllerVisible ? View.VISIBLE : View.GONE);
             videoHolder.addView(controller);
 
         } else {
@@ -294,6 +301,14 @@ public class Simplex extends Fragment implements
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
+    // Update style
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    public void setStyle (SimplexStyle style) {
+        this.style = style;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
     // Set data files
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -419,5 +434,12 @@ public class Simplex extends Fragment implements
 
     public void shouldAutostart () {
         state = PlaybackState.AUTOSTART;
+    }
+
+    public void hideController () {
+        isControllerVisible = false;
+        if (controller != null) {
+            controller.setVisibility(View.GONE);
+        }
     }
 }

@@ -2,12 +2,14 @@ package com.gabrielcoman.simplexmediaplayerdemo;
 
 import android.app.FragmentManager;
 import android.content.Intent;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 
 import com.gabrielcoman.simplexmediaplayer.Simplex;
+import com.gabrielcoman.simplexmediaplayer.aux.style.SimplexStyle;
 
 import tv.superawesome.lib.sanetwork.file.SAFileDownloader;
 import tv.superawesome.lib.sanetwork.file.SAFileDownloaderInterface;
@@ -30,6 +32,7 @@ public class MainActivity extends AppCompatActivity {
 
             myPlayer = new Simplex();
             myPlayer.shouldAutostart();
+//            myPlayer.hideController();
             manager.beginTransaction()
                     .add(R.id.PlayerHolder, myPlayer, myPlayerTag)
                     .commitAllowingStateLoss();

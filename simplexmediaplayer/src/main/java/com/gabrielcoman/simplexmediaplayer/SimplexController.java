@@ -37,6 +37,7 @@ public class SimplexController extends RelativeLayout implements
     private LinearLayout        indicatorLinear;
     private RelativeLayout      indicatorHolder;
     private SeekBar             indicatorSeekBar;
+    private ShapeDrawable       thumb;
     private View                indicatorLength;
     private View                indicatorPlayback;
     private View                indicatorBuffer;
@@ -162,6 +163,15 @@ public class SimplexController extends RelativeLayout implements
         indicatorBuffer.setAlpha(style.getIndicatorBufferAlpha());
         indicatorHolder.addView(indicatorBuffer);
 
+        indicatorPlayback = new View(context);
+        RelativeLayout.LayoutParams indicatorPlaybackParams = new RelativeLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT);
+        int playbackVMargin = (int)((HOLDER_HEIGHT - INDICATOR_HEIGHT) / 2.0F);
+        int playbackHMargin = (int) (HOLDER_HEIGHT / 2.0F);
+        indicatorPlaybackParams.setMargins(playbackHMargin, playbackVMargin, playbackHMargin, playbackVMargin);
+        indicatorPlayback.setLayoutParams(indicatorPlaybackParams);
+        indicatorPlayback.setBackgroundColor(style.getIndicatorPlaybackBgColor());
+        indicatorHolder.addView(indicatorPlayback);
+
         indicatorSeekBar = new SeekBar(context);
         indicatorSeekBar.setBackgroundColor(Color.TRANSPARENT);
         int seekbarHMargin = (int) (HOLDER_HEIGHT / 2.0F);
@@ -175,21 +185,11 @@ public class SimplexController extends RelativeLayout implements
         indicatorSeekBar.setOnSeekBarChangeListener(this);
         indicatorHolder.addView(indicatorSeekBar);
 
-        ShapeDrawable thumb = new ShapeDrawable(new OvalShape());
-
+        thumb = new ShapeDrawable(new OvalShape());
         thumb.setIntrinsicHeight(HOLDER_HEIGHT);
         thumb.setIntrinsicWidth(HOLDER_HEIGHT);
-        thumb.setColorFilter(style.getIndicatorPlaybackBgColor(), PorterDuff.Mode.ADD);
+        thumb.setColorFilter(style.getIndicatorPlaybackBgColor(), PorterDuff.Mode.SRC_IN);
         indicatorSeekBar.setThumb(thumb);
-
-        indicatorPlayback = new View(context);
-        RelativeLayout.LayoutParams indicatorPlaybackParams = new RelativeLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT);
-        int playbackVMargin = (int)((HOLDER_HEIGHT - INDICATOR_HEIGHT) / 2.0F);
-        int playbackHMargin = (int) (HOLDER_HEIGHT / 2.0F);
-        indicatorPlaybackParams.setMargins(playbackHMargin, playbackVMargin, playbackHMargin, playbackVMargin);
-        indicatorPlayback.setLayoutParams(indicatorPlaybackParams);
-        indicatorPlayback.setBackgroundColor(style.getIndicatorPlaybackBgColor());
-        indicatorHolder.addView(indicatorPlayback);
 
         indicatorTotalTime = new TextView(context);
         LinearLayout.LayoutParams indicatorTotalTimeParams =
@@ -204,9 +204,20 @@ public class SimplexController extends RelativeLayout implements
         indicatorLinear.addView(indicatorTotalTime);
     }
 
+
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // Update UI methods
     ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    public void setStyle (SimplexStyle style) {
+        this.style = style;
+        indicatorLength.setBackgroundColor(style.getIndicatorLengthBgColor());
+        indicatorLength.setAlpha(style.getIndicatorLengthAlpha());
+        indicatorBuffer.setBackgroundColor(style.getIndicatorBufferBgColor());
+        indicatorBuffer.setAlpha(style.getIndicatorBufferAlpha());
+        indicatorPlayback.setBackgroundColor(style.getIndicatorPlaybackBgColor());
+        thumb.setColorFilter(style.getIndicatorPlaybackBgColor(), PorterDuff.Mode.SRC_IN);
+    }
 
     public void updateButtonPlaybackForState (Simplex.PlaybackState state) {
 
