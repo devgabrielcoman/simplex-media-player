@@ -1,42 +1,26 @@
+/**
+ * @Copyright:   Gabriel Coman 2017
+ * @Author:      Gabriel Coman (gabriel.coman@superawesome.tv)
+ */
 package com.gabrielcoman.simplexmediaplayer.aux.image;
 
 import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Paint;
-import android.graphics.PorterDuff;
-import android.graphics.PorterDuffXfermode;
-import android.graphics.Rect;
-import android.graphics.RectF;
-import android.graphics.drawable.Drawable;
 import android.util.Base64;
 
 import static android.graphics.BitmapFactory.decodeByteArray;
 
+/**
+ * Aux class that contains methods to transform base64 encoded strings to bitmaps to the video
+ * player does not have any resource dependencies
+ */
 public class SimplexBitmap {
 
-    public static Bitmap createBitmap (int width, int height, int color, float radius) {
-        Bitmap output = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-
-        Canvas canvas = new Canvas(output);
-        final Paint paint = new Paint();
-        final Rect rect = new Rect(0, 0, output.getWidth(), output.getHeight());
-        final RectF rectF = new RectF(rect);
-
-        paint.setAntiAlias(true);
-        canvas.drawARGB(0, 0, 0, 0);
-        paint.setColor(color);
-        canvas.drawRoundRect(rectF, radius, radius, paint);
-
-        paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
-        canvas.drawBitmap(output, rect, rect, paint);
-
-        return output;
-    }
-
-    public static Drawable createDrawable (Bitmap bitmap) {
-        return new SimplexDrawable(bitmap, 0, 0);
-    }
-
+    /**
+     * Method that generates the bottom video gradient bitmap
+     *
+     * @return a bitmap of a semi-translucent gradient (that will cover the bottom part of the
+     *         video surface)
+     */
     public static Bitmap createVideoGradientBitmap () {
 
         String data = "iVBORw0KGgoAAAANSUhEUgAAAAoAAAAICAYAAADA+m62AAAAAXNSR0IArs4c6QAA" +
@@ -48,6 +32,11 @@ public class SimplexBitmap {
         return createBitmapFromString(data);
     }
 
+    /**
+     * Method that generates the default play button bitmap
+     *
+     * @return a bitmap of a triangle play button
+     */
     public static Bitmap createPlayButtonBitmap () {
 
         String data = "iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAYAAADDPmHLAAAAAXNSR0IArs4c6QAA\n" +
@@ -86,6 +75,11 @@ public class SimplexBitmap {
         return createBitmapFromString(data);
     }
 
+    /**
+     * Method that generates the default replay button bitmap
+     *
+     * @return a bitmap of a curved arrow used as default replay button
+     */
     public static Bitmap createReplayButtonBitmap () {
 
         String data = "iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAYAAADDPmHLAAAAAXNSR0IArs4c6QAA\n" +
@@ -182,7 +176,13 @@ public class SimplexBitmap {
         return createBitmapFromString(data);
     }
 
-    public static Bitmap createBitmapFromString (String data) {
+    /**
+     * Generic method that decodes a base64 string and returns a bitmap
+     *
+     * @param data  the base64 encoded string
+     * @return      a bitmap
+     */
+    private static Bitmap createBitmapFromString (String data) {
 
         try {
             byte [] encodeByte= Base64.decode(data, Base64.DEFAULT);
