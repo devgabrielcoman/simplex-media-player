@@ -451,7 +451,7 @@ public class SimplexController extends RelativeLayout implements
         float percent = seekBar.getProgress() / 100.0F;
 
         // send out a listener message toward the video player so that it know how to update
-        // the player to a new positipn
+        // the player to a new position
         listener.shouldAdvanceToPercent(percent);
     }
 

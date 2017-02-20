@@ -31,7 +31,7 @@ import java.io.IOException;
  */
 public class Simplex extends Fragment implements
         SimplexHolder.SimplexHolderInterface,
-        SurfaceHolder.Callback,
+        SimplexVideoView.SimplexVideoViewInterface,
         MediaPlayer.OnPreparedListener,
         MediaPlayer.OnErrorListener,
         MediaPlayer.OnCompletionListener,
@@ -61,9 +61,8 @@ public class Simplex extends Fragment implements
     private int               mTotalDuration      = 1;
     private int               mBufferPercent      = 0;
 
-    // start vars telling the class whether it is properly prepared and whether this is the
+    // state vars keeping track of whether this is the
     // first time the player is being called
-    private boolean           isPrepared          = false;
     private boolean           isFirstTime         = true;
 
     // local instance of a style that the users could interact with
@@ -174,7 +173,7 @@ public class Simplex extends Fragment implements
 
             // create the video view
             videoView = new SimplexVideoView(getActivity());
-            videoView.getHolder().addCallback(this);
+            videoView.setListener(this);
             videoHolder.addView(videoView);
 
             // create & parametrise the controller
@@ -219,18 +218,13 @@ public class Simplex extends Fragment implements
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
-     * Overridden SimplexVideoView SurfaceHolder.Callback listener method that will get called
+     * Overridden SimplexVideoViewInterface listener method that will get called
      * every time the SimplexVideoView surface gets re-created.
      *
      * @param holder current surface holder to feed into the media player
      */
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
-
-        // once this is called for the first time then we know for sure the fragment has been
-        // initialized successfully (as well as its subviews) and we can set the "isPrepared"
-        // state variable to true.
-        isPrepared = true;
 
         // if the media player is valid and not null
         if (mediaPlayer != null && videoView != null) {
@@ -255,22 +249,7 @@ public class Simplex extends Fragment implements
     }
 
     /**
-     * Overridden SimplexVideoView SurfaceHolder.Callback listener method that will get called
-     * every time the SimplexVideoView surface gets changed.
-     * Not implemented.
-     *
-     * @param holder current surface holder
-     * @param format format
-     * @param width  new width
-     * @param height new height
-     */
-    @Override
-    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-        // do nothing
-    }
-
-    /**
-     * Overridden SimplexVideoView SurfaceHolder.Callback listener method that will get called
+     * Overridden SimplexVideoViewInterface listener method that will get called
      * every time the SimplexVideoView surface gets destroyed.
      * This usually happens on an orientation change or when the activity gets put in the
      * background by another one.
@@ -467,10 +446,9 @@ public class Simplex extends Fragment implements
             @Override
             public void run() {
 
-                if (!isPrepared && mediaHandler != null) {
+                if (!videoView.isSurfaceCreated() && mediaHandler != null) {
                     mediaHandler.postDelayed(this, 250);
                 } else {
-
                     try {
                         prepareMedia (mediaName);
                     } catch (Throwable throwable) {

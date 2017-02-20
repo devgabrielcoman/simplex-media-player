@@ -7,6 +7,7 @@ package com.gabrielcoman.simplexmediaplayer;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.util.MalformedJsonException;
+import android.view.SurfaceHolder;
 import android.widget.FrameLayout;
 import android.widget.VideoView;
 
@@ -15,11 +16,20 @@ import android.widget.VideoView;
  * - member variables to hold the width & height of the video that it's trying to display
  * - a method that re-sizes the video view so that the aspect ratio is preserved
  */
-public class SimplexVideoView extends VideoView {
+public class SimplexVideoView extends VideoView implements
+    SurfaceHolder.Callback
+{
 
     // class member variables that hold the width & height of the video that's being rendered
     private int     videoWidth  = 0;
     private int     videoHeight = 0;
+
+    // internal state variable that keeps track of the video view being prepared for
+    // the first time
+    private boolean isSurfaceCreated = false;
+
+    // listener of type SimplexVideoViewListener
+    private SimplexVideoViewInterface listener;
 
     /**
      * Normal constructor with context
@@ -48,7 +58,19 @@ public class SimplexVideoView extends VideoView {
      * @param defStyleAttr  the default style attribute
      */
     public SimplexVideoView(Context context, AttributeSet attrs, int defStyleAttr) {
+
+        // call to super
         super(context, attrs, defStyleAttr);
+
+        // set holder callback to this
+        getHolder().addCallback(this);
+
+        // instantiate this so it's never null
+        listener = new SimplexVideoViewInterface() {
+            @Override
+            public void surfaceCreated(SurfaceHolder holder) {}
+            @Override
+            public void surfaceDestroyed(SurfaceHolder holder) {}};
     }
 
     /**
@@ -114,5 +136,101 @@ public class SimplexVideoView extends VideoView {
      */
     public float calcRatio (int width, int height) {
         return Math.abs(videoHeight != 0 ? width / (float) height : 1);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // Surface.Callback listener implementation
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Overridden SimplexVideoView SurfaceHolder.Callback listener method that will get called
+     * every time the SimplexVideoView surface gets re-created.
+     *
+     * @param holder current surface holder to feed into the media player
+     */
+    @Override
+    public void surfaceCreated(SurfaceHolder holder) {
+
+        // set the state "isPrepared" value to "true"
+        isSurfaceCreated = true;
+
+        // call listener
+        listener.surfaceCreated(holder);
+
+    }
+
+    /**
+     * Overridden SimplexVideoView SurfaceHolder.Callback listener method that will get called
+     * every time the SimplexVideoView surface gets changed.
+     * Not implemented.
+     *
+     * @param holder current surface holder
+     * @param format format
+     * @param width  new width
+     * @param height new height
+     */
+    @Override
+    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+        // do nothing
+    }
+
+    /**
+     * Overridden SimplexVideoView SurfaceHolder.Callback listener method that will get called
+     * every time the SimplexVideoView surface gets destroyed.
+     * This usually happens on an orientation change or when the activity gets put in the
+     * background by another one.
+     *
+     * @param holder current surface holder
+     */
+    @Override
+    public void surfaceDestroyed(SurfaceHolder holder) {
+
+        // call to the listener
+        listener.surfaceDestroyed(holder);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // Setters & Getters for state vars
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Getter for the "isPrepared" state variable
+     *
+     * @return the current value of "isPrepared"
+     */
+    public boolean isSurfaceCreated () {
+        return isSurfaceCreated;
+    }
+
+    /**
+     * Setter for the SimplexVideoViewInterface listener
+     *
+     * @param listener a new, non-null (hopefully) instance
+     */
+    public void setListener (SimplexVideoViewInterface listener) {
+        this.listener = listener != null ? listener : this.listener;
+    }
+
+    /**
+     * Interface that needs to be implemented by the SimplexPlayer in order to get callbacks
+     * from the Simplex Video View about when the surface is created or destroyed
+     *
+     */
+    interface SimplexVideoViewInterface {
+
+        /**
+         * Called when the surface is created
+         *
+         * @param holder current surface holder
+         */
+        void surfaceCreated (SurfaceHolder holder);
+
+        /**
+         * Called when the surface is destroyed
+         *
+         * @param holder current surface holder
+         */
+        void surfaceDestroyed (SurfaceHolder holder);
+
     }
 }
