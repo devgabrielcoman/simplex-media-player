@@ -19,12 +19,12 @@ public class SimplexHolder extends FrameLayout {
 
     // the old width & height of the frame layout. If these don't change, then a layout
     // change did not actually occur
-    private int  oldWidth  = 0;
-    private int  oldHeight = 0;
+    private int      oldWidth  = 0;
+    private int      oldHeight = 0;
 
-    // an instance of the SimplexHolderInterface to send callback messages back to
+    // an instance of the Listener to send callback messages back to
     // the Simplex player
-    private SimplexHolderInterface listener;
+    private Listener listener;
 
     /**
      * Normal constructor with context
@@ -59,7 +59,7 @@ public class SimplexHolder extends FrameLayout {
 
         // create a new default instance of the listener so that it's always not null
         // and we don't have to null-check every time we want to use it
-        listener = new SimplexHolderInterface() {
+        listener = new Listener() {
             @Override public void didChangeLayout(int newWidth, int newHeight) {}};
 
         // add a new view tree observer to listen to layout changes triggered by Android
@@ -102,19 +102,19 @@ public class SimplexHolder extends FrameLayout {
     }
 
     /**
-     * Methods that sets a new value for the SimplexHolderInterface listener instance
+     * Methods that sets a new value for the Listener listener instance
      *
-     * @param listener a new instance of SimplexHolderInterface
+     * @param listener a new instance of Listener
      */
-    public void setListener (SimplexHolderInterface listener) {
+    public void setListener (Listener listener) {
         this.listener = listener != null ? listener : this.listener;
     }
 
     /**
-     * Interface that any class that wants to receive callbacks from the SimplexHolder class
+     * Listener that any class that wants to receive callbacks from the SimplexHolder class
      * must implement.
      */
-    public interface SimplexHolderInterface {
+    public interface Listener {
 
         /**
          * Method to implement by the class. Called when an actual layout changes has happened.

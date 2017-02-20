@@ -32,7 +32,7 @@ public class MainActivity extends AppCompatActivity {
 
             myPlayer = new Simplex();
             myPlayer.shouldAutostart();
-            myPlayer.setStyle(SimplexStyle.testStyle());
+//            myPlayer.setStyle(SimplexStyle.testStyle());
 //            myPlayer.hideController();
             manager.beginTransaction()
                     .add(R.id.PlayerHolder, myPlayer, myPlayerTag)

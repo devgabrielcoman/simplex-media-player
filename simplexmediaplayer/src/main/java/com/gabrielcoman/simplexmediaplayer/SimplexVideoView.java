@@ -6,7 +6,6 @@ package com.gabrielcoman.simplexmediaplayer;
 
 import android.content.Context;
 import android.util.AttributeSet;
-import android.util.MalformedJsonException;
 import android.view.SurfaceHolder;
 import android.widget.FrameLayout;
 import android.widget.VideoView;
@@ -21,15 +20,15 @@ public class SimplexVideoView extends VideoView implements
 {
 
     // class member variables that hold the width & height of the video that's being rendered
-    private int     videoWidth  = 0;
-    private int     videoHeight = 0;
+    private int      videoWidth  = 0;
+    private int      videoHeight = 0;
 
     // internal state variable that keeps track of the video view being prepared for
     // the first time
-    private boolean isSurfaceCreated = false;
+    private boolean  surfaceCreated = false;
 
     // listener of type SimplexVideoViewListener
-    private SimplexVideoViewInterface listener;
+    private Listener listener;
 
     /**
      * Normal constructor with context
@@ -66,11 +65,11 @@ public class SimplexVideoView extends VideoView implements
         getHolder().addCallback(this);
 
         // instantiate this so it's never null
-        listener = new SimplexVideoViewInterface() {
+        listener = new Listener() {
             @Override
-            public void surfaceCreated(SurfaceHolder holder) {}
+            public void videoViewCreated(SurfaceHolder holder) {}
             @Override
-            public void surfaceDestroyed(SurfaceHolder holder) {}};
+            public void videoViewDestroyed(SurfaceHolder holder) {}};
     }
 
     /**
@@ -152,10 +151,10 @@ public class SimplexVideoView extends VideoView implements
     public void surfaceCreated(SurfaceHolder holder) {
 
         // set the state "isPrepared" value to "true"
-        isSurfaceCreated = true;
+        surfaceCreated = true;
 
         // call listener
-        listener.surfaceCreated(holder);
+        listener.videoViewCreated(holder);
 
     }
 
@@ -186,7 +185,7 @@ public class SimplexVideoView extends VideoView implements
     public void surfaceDestroyed(SurfaceHolder holder) {
 
         // call to the listener
-        listener.surfaceDestroyed(holder);
+        listener.videoViewDestroyed(holder);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -199,38 +198,38 @@ public class SimplexVideoView extends VideoView implements
      * @return the current value of "isPrepared"
      */
     public boolean isSurfaceCreated () {
-        return isSurfaceCreated;
+        return surfaceCreated;
     }
 
     /**
-     * Setter for the SimplexVideoViewInterface listener
+     * Setter for the Listener listener
      *
      * @param listener a new, non-null (hopefully) instance
      */
-    public void setListener (SimplexVideoViewInterface listener) {
+    public void setListener (Listener listener) {
         this.listener = listener != null ? listener : this.listener;
     }
 
     /**
-     * Interface that needs to be implemented by the SimplexPlayer in order to get callbacks
+     * Listener that needs to be implemented by the SimplexPlayer in order to get callbacks
      * from the Simplex Video View about when the surface is created or destroyed
      *
      */
-    interface SimplexVideoViewInterface {
+    interface Listener {
 
         /**
          * Called when the surface is created
          *
          * @param holder current surface holder
          */
-        void surfaceCreated (SurfaceHolder holder);
+        void videoViewCreated (SurfaceHolder holder);
 
         /**
          * Called when the surface is destroyed
          *
          * @param holder current surface holder
          */
-        void surfaceDestroyed (SurfaceHolder holder);
+        void videoViewDestroyed (SurfaceHolder holder);
 
     }
 }
