@@ -2,7 +2,6 @@
  * @Copyright:   Gabriel Coman 2017
  * @Author:      Gabriel Coman (gabriel.coman@superawesome.tv)
  */
-
 package com.gabrielcoman.simplexmediaplayer.controller;
 
 import android.content.Context;
@@ -69,8 +68,8 @@ public class IndicatorBackground extends RelativeLayout {
         support = new LinearLayout(context);
         LinearLayout.LayoutParams indicatorLinearParams =
                 new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-        support.setOrientation(LinearLayout.HORIZONTAL);
         support.setLayoutParams(indicatorLinearParams);
+        support.setOrientation(LinearLayout.HORIZONTAL);
         support.setBackgroundColor(Color.TRANSPARENT);
         addView(support);
     }
@@ -82,7 +81,7 @@ public class IndicatorBackground extends RelativeLayout {
      */
     public void updateStyle (SimplexStyle style) {
         if (style != null) {
-            mask.setImageBitmap(style.getBottomGradientMaskBitmap());
+            mask.setImageBitmap(style.getBottomMaskBitmap());
         }
     }
 

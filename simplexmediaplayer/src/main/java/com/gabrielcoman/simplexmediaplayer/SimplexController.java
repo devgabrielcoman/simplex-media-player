@@ -259,7 +259,6 @@ public class SimplexController extends RelativeLayout implements
     }
 
 
-
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // Public interface that a Simplex player must implement to talk with the controllers
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -271,6 +270,11 @@ public class SimplexController extends RelativeLayout implements
      */
     interface Listener {
 
+        /**
+         * Method implemented by the interface. Gets called when someone clicks on the
+         * big play button
+         *
+         */
         void didClickOnPlaybackButton ();
 
         /**

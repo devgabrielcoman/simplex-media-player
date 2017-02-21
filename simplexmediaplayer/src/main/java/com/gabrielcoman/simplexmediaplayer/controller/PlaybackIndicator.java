@@ -26,6 +26,7 @@ public class PlaybackIndicator extends RelativeLayout implements SeekBar.OnSeekB
 
     // constants
     private static final int SEEKBAR_SIZE   = 30;
+    private static final int SEEKBAR_MARGIN = (int)(SEEKBAR_SIZE / 2.0F);
     private static final int INDICATOR_SIZE = 10;
 
     // subviews
@@ -80,10 +81,10 @@ public class PlaybackIndicator extends RelativeLayout implements SeekBar.OnSeekB
         length = new View(context);
         RelativeLayout.LayoutParams indicatorLengthParams =
                 new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, INDICATOR_SIZE);
-        int lengthHMargin = (int) (SEEKBAR_SIZE / 2.0f);
         indicatorLengthParams.addRule(CENTER_VERTICAL, RelativeLayout.TRUE);
-        indicatorLengthParams.setMargins(lengthHMargin, 0, lengthHMargin, 0);
+        indicatorLengthParams.setMargins(SEEKBAR_MARGIN, 0, SEEKBAR_MARGIN, 0);
         length.setLayoutParams(indicatorLengthParams);
+        length.setAlpha(0.5F);
         addView(length);
 
         // this indicator represents how much of the video has been buffered so far
@@ -91,9 +92,9 @@ public class PlaybackIndicator extends RelativeLayout implements SeekBar.OnSeekB
         RelativeLayout.LayoutParams indicatorBufferParams
                 = new RelativeLayout.LayoutParams(0, INDICATOR_SIZE);
         indicatorBufferParams.addRule(CENTER_VERTICAL, RelativeLayout.TRUE);
-        int bufferHMargin = (int) (SEEKBAR_SIZE / 2.0F);
-        indicatorBufferParams.setMargins(bufferHMargin, 0, bufferHMargin, 0);
+        indicatorBufferParams.setMargins(SEEKBAR_MARGIN, 0, SEEKBAR_MARGIN, 0);
         buffer.setLayoutParams(indicatorBufferParams);
+        buffer.setAlpha(0.5F);
         addView(buffer);
 
         // this indicator represents the current state of the playback
@@ -102,17 +103,15 @@ public class PlaybackIndicator extends RelativeLayout implements SeekBar.OnSeekB
         RelativeLayout.LayoutParams indicatorPlaybackParams
                 = new RelativeLayout.LayoutParams(0, INDICATOR_SIZE);
         indicatorPlaybackParams.addRule(CENTER_VERTICAL, RelativeLayout.TRUE);
-        int playbackHMargin = (int) (SEEKBAR_SIZE / 2.0F);
-        indicatorPlaybackParams.setMargins(playbackHMargin, 0, playbackHMargin, 0);
+        indicatorPlaybackParams.setMargins(SEEKBAR_MARGIN, 0, SEEKBAR_MARGIN, 0);
         playback.setLayoutParams(indicatorPlaybackParams);
         addView(playback);
 
         // this indicator is a seek-bar that can control the movie playback
-        // users can drag it to go to different parts of the video with it
+        // users can drag it to seek to different parts of the video with it
         seekbar = new SeekBar(context);
         seekbar.setBackgroundColor(Color.TRANSPARENT);
-        int seekbarHMargin = (int) (SEEKBAR_SIZE / 2.0F);
-        seekbar.setPadding(seekbarHMargin, 0, seekbarHMargin, 0);
+        seekbar.setPadding(SEEKBAR_MARGIN, 0, SEEKBAR_MARGIN, 0);
         RelativeLayout.LayoutParams indicatorSeekBarParams
                 = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, SEEKBAR_SIZE);
         indicatorSeekBarParams.addRule(CENTER_VERTICAL, RelativeLayout.TRUE);
@@ -141,12 +140,10 @@ public class PlaybackIndicator extends RelativeLayout implements SeekBar.OnSeekB
      */
     public void updateStyle (SimplexStyle style) {
         if (style != null) {
-            length.setBackgroundColor(style.getIndicatorLengthBgColor());
-            length.setAlpha(style.getIndicatorLengthAlpha());
-            buffer.setBackgroundColor(style.getIndicatorBufferBgColor());
-            buffer.setAlpha(style.getIndicatorBufferAlpha());
-            playback.setBackgroundColor(style.getIndicatorPlaybackBgColor());
-            thumb.setColorFilter(style.getIndicatorPlaybackBgColor(), PorterDuff.Mode.SRC_IN);
+            length.setBackgroundColor(style.getLengthColor());
+            buffer.setBackgroundColor(style.getBufferColor());
+            playback.setBackgroundColor(style.getPlaybackColor());
+            thumb.setColorFilter(style.getPlaybackColor(), PorterDuff.Mode.SRC_IN);
         }
     }
 

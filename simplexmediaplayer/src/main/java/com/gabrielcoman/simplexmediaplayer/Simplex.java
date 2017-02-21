@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.Nullable;
+import android.util.Log;
 import android.util.Patterns;
 import android.view.LayoutInflater;
 import android.view.SurfaceHolder;
@@ -32,10 +33,7 @@ import java.io.IOException;
 public class Simplex extends Fragment implements
         SimplexHolder.Listener,
         SimplexVideoView.Listener,
-        MediaPlayer.OnPreparedListener,
-        MediaPlayer.OnErrorListener,
-        MediaPlayer.OnCompletionListener,
-        MediaPlayer.OnBufferingUpdateListener,
+        SimplexMediaPlayer.Listener,
         SimplexController.Listener
 {
 
@@ -44,31 +42,25 @@ public class Simplex extends Fragment implements
     // - the special Simplex video view
     // - the special media player
     // - the special Simplex controller
-    private SimplexHolder     videoHolder         = null;
-    private SimplexVideoView  videoView           = null;
-    private MediaPlayer       mediaPlayer         = null;
-    private SimplexController controller          = null;
+    private SimplexHolder       videoHolder         = null;
+    private SimplexVideoView    videoView           = null;
+    private SimplexMediaPlayer  mediaPlayer         = null;
+    private SimplexController   controller          = null;
 
     // two handlers to check on video progress and
     // whether the media should be played or not
-    private Handler           progressHandler     = null;
-    private Handler           mediaHandler        = null;
-
-    // state vars containing the current seek pos, duration and percent of the buffer
-    // that's been loaded
-    private int               currentSeekPos = 0;
-    private int               totalDuration = 1;
-    private int               bufferPercent = 0;
+    private Handler             progressHandler     = null;
+    private Handler             mediaHandler        = null;
 
     // state vars keeping track of whether this is the
     // first time the player is being called
-    private boolean           isFirstTime         = true;
+    private boolean             isFirstTime         = true;
 
     // local instance of a style that the users could interact with
-    private SimplexStyle      style               = new SimplexStyle();
+    private SimplexStyle        style               = new SimplexStyle();
 
     // var holding whether the controller is visible
-    private boolean           isControllerVisible = true;
+    private boolean             isControllerVisible = true;
 
     // private enum holding the internal simplified state of the player
     enum PlaybackState {
@@ -115,20 +107,40 @@ public class Simplex extends Fragment implements
                     }
                 } else {
 
-                    // get a version of the current time - either from the media player
-                    // or from a saved previous one
-                    int currentTime;
+                    int currentTime = 0;
 
                     try {
                         currentTime = mediaPlayer.getCurrentPosition();
                     } catch (Exception e) {
-                        currentTime = currentSeekPos;
+                        // do nothing
                     }
 
-                    // get the playback percent
-                    float playbackPercent = currentTime / (float) totalDuration;
+                    int totalDuration = 0;
+
+                    try {
+                        totalDuration = mediaPlayer.getTotalDuration();
+                    } catch (Exception e) {
+                        // do nothing
+                    }
+
+                    // get a version of the current time - either from the media player
+                    // or from a saved previous one
+                    float playbackPercent = 0;
+
+                    try {
+                        playbackPercent = currentTime / (float) totalDuration;
+                    } catch (Exception e) {
+                        // do nothing
+                    }
+
                     // and the buffer percent
-                    float bufferPercent = Simplex.this.bufferPercent / 100.0F;
+                    float bufferPercent = 0;
+
+                    try {
+                        bufferPercent = mediaPlayer.getBufferPercent();
+                    } catch (Exception e) {
+                        // do nothing
+                    }
 
                     // and finally update all the UI
                     try {
@@ -260,9 +272,6 @@ public class Simplex extends Fragment implements
         // only if the media player is not null
         if (mediaPlayer != null) {
 
-            // update the current seek pos to know where to return to later
-            currentSeekPos = mediaPlayer.getCurrentPosition();
-
             // stop the media player
             mediaPlayer.stop();
 
@@ -291,30 +300,30 @@ public class Simplex extends Fragment implements
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
-     * Overridden MediaPlayer onPrepared method. This will get called every time the media player
-     * will be properly prepared.
-     *
-     * @param mp current media player
+     * Overridden SimplexMediaPlayer.Listener onPrepared method
+     * Here, depending on the state of the video player, multiple things can happen
+     * - either the video continues (or starts)
+     * - or it just seeks to a position
      */
     @Override
-    public void onPrepared(MediaPlayer mp) {
+    public void onPrepared() {
 
         switch (state) {
 
             // when auto-starting or playing, just call the internal "play(toPos)" method
             case AUTOSTART:
             case PLAYING: {
-                play(currentSeekPos);
+                play(mediaPlayer.getLastPosition());
                 break;
             }
             // when pausing, always seek to the current pos (which should not change)
             case PAUSED: {
-                mp.seekTo(currentSeekPos);
+                mediaPlayer.seekToLastPosition();
                 break;
             }
             // when rewinding, always seek to the total duration
             case REWIND: {
-                mp.seekTo(totalDuration);
+                mediaPlayer.seekToEnd();
                 break;
             }
             // when it's not started
@@ -323,46 +332,30 @@ public class Simplex extends Fragment implements
                 break;
             }
         }
+
     }
 
     /**
-     * verridden MediaPlayer onCompletion method.
-     *
-     * @param mp current media player
+     * Overridden SimplexMediaPlayer.Listener onCompletion method
+     * Here the media player pauses and the state goes to "rewind"
      */
     @Override
-    public void onCompletion(MediaPlayer mp) {
+    public void onCompletion() {
 
-        // pause the video
-        mp.pause();
+        // pause & save last position
+        mediaPlayer.pause();
 
-        // put the state in rewind mode
+        // rewind
         state = PlaybackState.REWIND;
     }
 
     /**
-     * verridden MediaPlayer onError method. Not implemented.
+     * Overridden SimplexMediaPlayer.Listener onError method
      *
-     * @param mp    current media player
-     * @param what  what the error's about
-     * @param extra extra info
-     * @return      whether to propagate the error or not
      */
     @Override
-    public boolean onError(MediaPlayer mp, int what, int extra) {
-        return false;
-    }
-
-    /**
-     * Overridden MediaPlayer onBufferingUpdate method.
-     * This will just update the state "bufferPercent" variable
-     *
-     * @param mp        current media player
-     * @param percent   the percent of the media buffer that's full
-     */
-    @Override
-    public void onBufferingUpdate(MediaPlayer mp, int percent) {
-        bufferPercent = percent;
+    public void onError() {
+        // do nothing
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -379,7 +372,7 @@ public class Simplex extends Fragment implements
             // if the video hasn't started or it's paused, start playing
             case NOTSTARTED:
             case PAUSED: {
-                play(currentSeekPos);
+                play(mediaPlayer.getLastPosition());
                 break;
             }
             // if the video is playing, pause it
@@ -413,11 +406,12 @@ public class Simplex extends Fragment implements
         // only if we have a valid media player
         if (mediaPlayer != null) {
 
-            // calc the new position
-            int cPosition = (int) (percent * totalDuration);
+            // position
+            int position = (int) (percent * mediaPlayer.getTotalDuration());
 
-            // play to the calculated position
-            play(cPosition);
+            // play from resulting position
+            play(position);
+
         }
 
     }
@@ -479,35 +473,28 @@ public class Simplex extends Fragment implements
                 state = PlaybackState.PLAYING;
             }
 
+            // create or reset the media player
+            if (mediaPlayer == null) {
+                mediaPlayer = new SimplexMediaPlayer();
+                mediaPlayer.setDisplay(videoView.getHolder());
+                mediaPlayer.setListener(this);
+            } else {
+                mediaPlayer.reset();
+            }
+
             // determine what type of media Url we're talking about
             String mediaUrl;
 
             File file = new File(context.getFilesDir(), mediaName);
             if (file.exists()) {
                 mediaUrl = file.toString();
-                bufferPercent = 100;
+                mediaPlayer.setOfflineBuffer();
             } else if (Patterns.WEB_URL.matcher(mediaName).matches()){
                 mediaUrl = mediaName;
-                bufferPercent = 0;
+                mediaPlayer.setOnlineBuffer();
             } else {
                 throw new Exception("Media inputted is neither a valid file on disk or a remote url!");
             }
-
-            // create or reset the media player
-            if (mediaPlayer == null) {
-
-                mediaPlayer = new MediaPlayer();
-                mediaPlayer.setDisplay(videoView.getHolder());
-                mediaPlayer.setOnPreparedListener(this);
-                mediaPlayer.setOnErrorListener(this);
-                mediaPlayer.setOnCompletionListener(this);
-                mediaPlayer.setOnBufferingUpdateListener(this);
-            } else {
-                mediaPlayer.reset();
-            }
-
-            // make the current seek pos = 0
-            currentSeekPos = 0;
 
             // try to set the data source
             try {
@@ -522,9 +509,6 @@ public class Simplex extends Fragment implements
             } catch (IOException | IllegalStateException e) {
                 e.printStackTrace();
             }
-
-            // and if all is OK, get the duration
-            totalDuration = mediaPlayer.getDuration();
 
             // and update the video size and container
             try {
@@ -553,10 +537,7 @@ public class Simplex extends Fragment implements
             state = PlaybackState.PLAYING;
 
             // seek to
-            mediaPlayer.seekTo(position);
-
-            // start
-            mediaPlayer.start();
+            mediaPlayer.playFrom(position);
         }
     }
 
@@ -568,9 +549,6 @@ public class Simplex extends Fragment implements
 
             // set the state to "paused"
             state = PlaybackState.PAUSED;
-
-            // get the current seek pos
-            currentSeekPos = mediaPlayer.getCurrentPosition();
 
             // pause
             mediaPlayer.pause();

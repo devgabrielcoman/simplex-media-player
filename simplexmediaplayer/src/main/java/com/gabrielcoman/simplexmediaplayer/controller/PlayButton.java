@@ -65,6 +65,7 @@ public class PlayButton extends RelativeLayout {
                 new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         mask.setLayoutParams(fullscreenMaskParams);
         mask.setVisibility(GONE);
+        mask.setAlpha(0.25F);
         addView(mask);
 
         // create the play button
@@ -90,8 +91,7 @@ public class PlayButton extends RelativeLayout {
 
         // if the style is OK - update the elements as well
         if (this.style != null) {
-            mask.setBackgroundColor(style.getFullscreenMaskBgColor());
-            mask.setAlpha(style.getFullscreenMaskAlpha());
+            mask.setBackgroundColor(style.getMaskColor());
         }
     }
 
@@ -107,7 +107,7 @@ public class PlayButton extends RelativeLayout {
      * Method that sets the button style to "paused"
      */
     public void setStatePaused () {
-        play.setImageBitmap(style.getButtonPlaybackPlayBitmap());
+        play.setImageBitmap(style.getPlayBitmap());
         mask.setVisibility(VISIBLE);
     }
 
@@ -115,7 +115,7 @@ public class PlayButton extends RelativeLayout {
      * Method that sets the button style to "rewind"
      */
     public void setStateRewind () {
-        play.setImageBitmap(style.getButtonPlaybackReplayBitmap());
+        play.setImageBitmap(style.getReplayBitmap());
         mask.setVisibility(VISIBLE);
     }
 

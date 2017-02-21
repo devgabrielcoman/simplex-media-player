@@ -14,35 +14,17 @@ import com.gabrielcoman.simplexmediaplayer.aux.image.SimplexBitmap;
  */
 public class SimplexStyle {
 
-    // member vars that determine how the semi-transparent mask that covers the screen
-    // when the video is paused will actually look like
-    private int     fullscreenMaskBgColor        = Color.BLACK;
-    private float   fullscreenMaskAlpha          = 0.25F;
+    // bitmaps
+    private Bitmap playBitmap       = SimplexBitmap.createPlayButtonBitmap();
+    private Bitmap replayBitmap     = SimplexBitmap.createReplayButtonBitmap();
+    private Bitmap bottomMaskBitmap = SimplexBitmap.createVideoGradientBitmap();
 
-    // member vars that hold bitmaps for the play & replay buttons
-    private Bitmap  buttonPlaybackPlayBitmap     = SimplexBitmap.createPlayButtonBitmap();
-    private Bitmap  buttonPlaybackReplayBitmap   = SimplexBitmap.createReplayButtonBitmap();
-
-    // member var that holds a bitmap for the bottom semi-translucent gradient
-    private Bitmap  bottomGradientMaskBitmap     = SimplexBitmap.createVideoGradientBitmap();
-
-    // member var that holds the default background color for the indicator holder
-    private int     indicatorBackgroundBgColor   = Color.TRANSPARENT;
-
-    // member vars that determine how the current time indicator will look like
-    private int     indicatorCurrentTimeBgColor  = Color.TRANSPARENT;
-    private int     indicatorCurrentTimeTxtColor = Color.WHITE;
-
-    // member vars that determine how the total time indicator will look like
-    private int     indicatorTotalTimeBgColor    = Color.TRANSPARENT;
-    private int     indicatorTotalTimeTxtColor   = Color.WHITE;
-
-    // member vars that determine how the length, buffer and playback bars will look like
-    private int     indicatorLengthBgColor       = Color.LTGRAY;
-    private float   indicatorLengthAlpha         = 0.5F;
-    private int     indicatorBufferBgColor       = Color.WHITE;
-    private float   indicatorBufferAlpha         = 0.5F;
-    private int     indicatorPlaybackBgColor     = Color.RED;
+    // different colors that can be changed
+    private int     textColor       = Color.WHITE;
+    private int     maskColor       = Color.BLACK;
+    private int     lengthColor     = Color.LTGRAY;
+    private int     bufferColor     = Color.WHITE;
+    private int     playbackColor   = Color.RED;
 
     /**
      * Factory method that creates the default (normal) style for the player
@@ -60,7 +42,7 @@ public class SimplexStyle {
      */
     public static SimplexStyle redStyle () {
         SimplexStyle style = new SimplexStyle();
-        style.indicatorPlaybackBgColor = Color.RED;
+        style.playbackColor = Color.RED;
         return style;
     }
 
@@ -71,7 +53,7 @@ public class SimplexStyle {
      */
     public static SimplexStyle blueStyle () {
         SimplexStyle style = new SimplexStyle();
-        style.indicatorPlaybackBgColor = 0xFF669EF9;
+        style.playbackColor = 0xFF669EF9;
         return style;
     }
 
@@ -82,7 +64,7 @@ public class SimplexStyle {
      */
     public static SimplexStyle greenStyle () {
         SimplexStyle style = new SimplexStyle();
-        style.indicatorPlaybackBgColor = 0xFF6FCE85;
+        style.playbackColor = 0xFF6FCE85;
         return style;
     }
 
@@ -93,20 +75,7 @@ public class SimplexStyle {
      */
     public static SimplexStyle grayStyle () {
         SimplexStyle style = new SimplexStyle();
-        style.indicatorPlaybackBgColor = 0xFFC6C6C6;
-        return style;
-    }
-
-    /**
-     * Factory method that creates a test style used for debugging
-     *
-     * @return a new instance of simplex style
-     */
-    public static SimplexStyle testStyle() {
-        SimplexStyle style = new SimplexStyle();
-        style.indicatorBackgroundBgColor = Color.BLUE;
-        style.indicatorCurrentTimeBgColor = Color.MAGENTA;
-        style.indicatorTotalTimeBgColor = Color.MAGENTA;
+        style.playbackColor = 0xFFC6C6C6;
         return style;
     }
 
@@ -114,97 +83,70 @@ public class SimplexStyle {
     // Getters
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public int getIndicatorBackgroundBgColor() {
-        return indicatorBackgroundBgColor;
+    public int getLengthColor() {
+        return lengthColor;
     }
 
-    public int getIndicatorCurrentTimeBgColor() {
-        return indicatorCurrentTimeBgColor;
+    public int getBufferColor() {
+        return bufferColor;
     }
 
-    public int getIndicatorCurrentTimeTxtColor() {
-        return indicatorCurrentTimeTxtColor;
+    public int getPlaybackColor() {
+        return playbackColor;
     }
 
-    public int getIndicatorTotalTimeBgColor() {
-        return indicatorTotalTimeBgColor;
+    public int getMaskColor() {
+        return maskColor;
     }
 
-    public int getIndicatorTotalTimeTxtColor() {
-        return indicatorTotalTimeTxtColor;
+    public Bitmap getPlayBitmap() {
+        return playBitmap;
     }
 
-    public int getIndicatorLengthBgColor() {
-        return indicatorLengthBgColor;
+    public Bitmap getReplayBitmap() {
+        return replayBitmap;
     }
 
-    public int getIndicatorBufferBgColor() {
-        return indicatorBufferBgColor;
+    public Bitmap getBottomMaskBitmap() {
+        return bottomMaskBitmap;
     }
 
-    public int getIndicatorPlaybackBgColor() {
-        return indicatorPlaybackBgColor;
-    }
-
-    public float getIndicatorLengthAlpha() {
-        return indicatorLengthAlpha;
-    }
-
-    public float getIndicatorBufferAlpha() {
-        return indicatorBufferAlpha;
-    }
-
-    public int getFullscreenMaskBgColor() {
-        return fullscreenMaskBgColor;
-    }
-
-    public float getFullscreenMaskAlpha() {
-        return fullscreenMaskAlpha;
-    }
-
-    public Bitmap getButtonPlaybackPlayBitmap() {
-        return buttonPlaybackPlayBitmap;
-    }
-
-    public Bitmap getButtonPlaybackReplayBitmap() {
-        return buttonPlaybackReplayBitmap;
-    }
-
-    public Bitmap getBottomGradientMaskBitmap() {
-        return bottomGradientMaskBitmap;
+    public int getTextColor() {
+        return textColor;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // Public setters
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public void setTotalLengthIndicatorBackground (int color) {
-        indicatorLengthBgColor =  color;
+    public void setMaskColor (int color) {
+        maskColor = color;
     }
 
-    public void setTotalLengthIndicatorAlpha (float alpha) {
-        indicatorLengthAlpha = alpha;
+    public void setLengthColor (int color) {
+        lengthColor =  color;
     }
 
-    public void setBufferLengthIndicatorBackground (int color) {
-        indicatorBufferBgColor = color;
+    public void setBufferColor (int color) {
+        bufferColor = color;
     }
 
-    public void setBufferLengthIndicatorAlpha (float alpha) {
-        indicatorBufferAlpha = alpha;
+    public void setPlaybackColor (int color) {
+        playbackColor = color;
     }
 
-    public void setPlaybackLengthIndicatorBackground (int color) {
-        indicatorPlaybackBgColor = color;
+    public void setTextColor (int textColor) {
+        this.textColor = textColor;
     }
 
-    public void setPlayButtonBitmap (Bitmap bitmap) {
-        buttonPlaybackPlayBitmap = bitmap;
+    public void setPlayBitmap (Bitmap bitmap) {
+        playBitmap = bitmap;
     }
 
-    public void setReplayButtonBitmap (Bitmap bitmap) {
-        buttonPlaybackReplayBitmap = bitmap;
+    public void setReplayBitmap (Bitmap bitmap) {
+        replayBitmap = bitmap;
     }
+
 
 
 }

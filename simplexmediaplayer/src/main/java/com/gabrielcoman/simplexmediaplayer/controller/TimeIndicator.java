@@ -5,6 +5,7 @@
 package com.gabrielcoman.simplexmediaplayer.controller;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.widget.TextView;
@@ -15,6 +16,10 @@ import com.gabrielcoman.simplexmediaplayer.aux.style.SimplexStyle;
  * This class represents a custom TextView used to display video player time
  */
 public class TimeIndicator extends TextView {
+
+    // constants
+    private final static int PADDING_HORZ = 15;
+    private final static int PADDING_VERT = 10;
 
     /**
      * Normal constructor with context
@@ -47,7 +52,8 @@ public class TimeIndicator extends TextView {
 
         setGravity(Gravity.CENTER);
         setText("00:00");
-        setPadding(15, 10, 15, 10);
+        setBackgroundColor(Color.TRANSPARENT);
+        setPadding(PADDING_HORZ, PADDING_VERT, PADDING_HORZ, PADDING_VERT);
     }
 
     /**
@@ -57,8 +63,7 @@ public class TimeIndicator extends TextView {
      */
     public void updateStyle (SimplexStyle style) {
         if (style != null) {
-            setBackgroundColor(style.getIndicatorCurrentTimeBgColor());
-            setTextColor(style.getIndicatorCurrentTimeTxtColor());
+            setTextColor(style.getTextColor());
         }
     }
 }
