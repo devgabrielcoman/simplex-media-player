@@ -12,6 +12,7 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
 import com.gabrielcoman.simplexmediaplayer.aux.style.SimplexStyle;
+import com.gabrielcoman.simplexmediaplayer.aux.time.SimplexTime;
 import com.gabrielcoman.simplexmediaplayer.controller.IndicatorBackground;
 import com.gabrielcoman.simplexmediaplayer.controller.PlayButton;
 import com.gabrielcoman.simplexmediaplayer.controller.PlaybackIndicator;
@@ -216,19 +217,19 @@ public class SimplexController extends RelativeLayout implements
     /**
      * Public method that updates the text for the total time
      *
-     * @param text a text containing the total time
+     * @param time a new instance of a SimplexTime object
      */
-    void updateTotalTime (String text) {
-        totalTime.setText(text);
+    void updateTotalTime (SimplexTime time) {
+        totalTime.updateText(time);
     }
 
     /**
      * Public method that updates the current time text
      *
-     * @param text a text containing the current time
+     * @param time a new instance of a SimplexTime object
      */
-    void updateCurrentTime (String text) {
-        currentTime.setText(text);
+    void updateCurrentTime (SimplexTime time) {
+        currentTime.updateText(time);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

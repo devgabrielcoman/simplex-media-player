@@ -7,12 +7,10 @@ package com.gabrielcoman.simplexmediaplayer;
 import android.app.Activity;
 import android.app.Fragment;
 import android.graphics.Color;
-import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.Nullable;
-import android.util.Log;
 import android.util.Patterns;
 import android.view.LayoutInflater;
 import android.view.SurfaceHolder;
@@ -23,6 +21,7 @@ import android.widget.RelativeLayout;
 
 import com.gabrielcoman.simplexmediaplayer.aux.style.SimplexStyle;
 import com.gabrielcoman.simplexmediaplayer.aux.time.SimplexTime;
+import com.gabrielcoman.simplexmediaplayer.aux.time.SimplexTimeAux;
 
 import java.io.File;
 import java.io.IOException;
@@ -62,6 +61,9 @@ public class Simplex extends Fragment implements
     // var holding whether the controller is visible
     private boolean             isControllerVisible = true;
 
+    // private listener
+    private Listener            listener;
+
     // private enum holding the internal simplified state of the player
     enum PlaybackState {
         NOTSTARTED,
@@ -76,6 +78,20 @@ public class Simplex extends Fragment implements
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // Fragment
     ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Basic default Fragment constructor, that just instantiates a new listener
+     */
+    public Simplex () {
+        listener = new Listener() {
+            @Override public void didStart() {}
+            @Override public void didPause() {}
+            @Override public void didComplete() {}
+            @Override public void didError() {}
+            @Override public void didClose () {}
+            @Override public void didUpdateBuffer (float percent) {}
+            @Override public void didUpdatePlayback (int hour, int minute, int second) {}};
+    }
 
     /**
      * Overridden Fragment "onCreate" method that will only be called once.
@@ -142,12 +158,21 @@ public class Simplex extends Fragment implements
                         // do nothing
                     }
 
+                    // get time
+                    SimplexTime time = SimplexTimeAux.getTime(currentTime);
+
+                    // call listener
+                    if (state == PlaybackState.PLAYING) {
+                        listener.didUpdateBuffer(bufferPercent);
+                        listener.didUpdatePlayback(time.getHour(), time.getMinute(), time.getSecond());
+                    }
+
                     // and finally update all the UI
                     try {
                         controller.updatePlayback(playbackPercent);
                         controller.updateThumb(playbackPercent);
-                        controller.updateCurrentTime(SimplexTime.getTimeString(currentTime));
-                        controller.updateTotalTime(SimplexTime.getTimeString(totalDuration));
+                        controller.updateCurrentTime(time);
+                        controller.updateTotalTime(time);
                         controller.updateBuffer(bufferPercent);
                         controller.updateButtonPlaybackForState (state);
                     } catch (Exception e) {
@@ -196,7 +221,12 @@ public class Simplex extends Fragment implements
             videoHolder.addView(controller);
 
         } else {
-            container.removeView(videoHolder);
+            if (container != null) {
+                container.removeView(videoHolder);
+            } else {
+                ViewGroup p = (ViewGroup) videoHolder.getParent();
+                p.removeView(videoHolder);
+            }
         }
 
         return videoHolder;
@@ -342,6 +372,9 @@ public class Simplex extends Fragment implements
     @Override
     public void onCompletion() {
 
+        // call listener
+        listener.didComplete();
+
         // pause & save last position
         mediaPlayer.pause();
 
@@ -355,7 +388,8 @@ public class Simplex extends Fragment implements
      */
     @Override
     public void onError() {
-        // do nothing
+        // call listener
+        listener.didError();
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -533,6 +567,9 @@ public class Simplex extends Fragment implements
     private void play (int position) {
         if (mediaPlayer != null) {
 
+            // call listener
+            listener.didStart();
+
             // set state to "playing"
             state = PlaybackState.PLAYING;
 
@@ -547,6 +584,9 @@ public class Simplex extends Fragment implements
     private void pause () {
         if (mediaPlayer != null) {
 
+            // call listener
+            listener.didPause();
+
             // set the state to "paused"
             state = PlaybackState.PAUSED;
 
@@ -559,6 +599,9 @@ public class Simplex extends Fragment implements
      * Public "Close" method. It deletes everything
      */
     public void close () {
+
+        // call listener
+        listener.didClose();
 
         // remove the video view
         videoHolder.removeView(videoView);
@@ -581,7 +624,7 @@ public class Simplex extends Fragment implements
     /**
      * Public setter that sets whether the video should auto-start
      */
-    public void shouldAutostart () {
+    public void shouldAutoStart () {
         state = PlaybackState.AUTOSTART;
     }
 
@@ -605,5 +648,65 @@ public class Simplex extends Fragment implements
         if (controller != null) {
             controller.updateStyle(style);
         }
+    }
+
+    /**
+     * Setter for the listener
+     *
+     * @param listener new listener instance
+     */
+    public void setListener (Listener listener) {
+        this.listener = listener != null ? listener : this.listener;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // Interface for the video player
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Public interface of the Simplex player
+     */
+    public interface Listener {
+
+        /**
+         * Called when a media file gets prepared and starts playing
+         */
+        void didStart ();
+
+        /**
+         * Called when a media file is paused
+         */
+        void didPause ();
+
+        /**
+         * Called when a media file is completed
+         */
+        void didComplete ();
+
+        /**
+         * Called when a media file errors
+         */
+        void didError ();
+
+        /**
+         * Called when the player closes alltogether
+         */
+        void didClose ();
+
+        /**
+         * Called when the buffer for a media is updaed
+         *
+         * @param percent of update, from 0 to 1
+         */
+        void didUpdateBuffer (float percent);
+
+        /**
+         * Called when the playback is updated to (hour / minute / second) of playing
+         *
+         * @param hour   hour of playback update
+         * @param minute minute of playback update
+         * @param second second of playback update
+         */
+        void didUpdatePlayback (int hour, int minute, int second);
     }
 }

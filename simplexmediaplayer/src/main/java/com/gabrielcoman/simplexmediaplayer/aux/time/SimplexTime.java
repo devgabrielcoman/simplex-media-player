@@ -4,46 +4,52 @@
  */
 package com.gabrielcoman.simplexmediaplayer.aux.time;
 
-import java.util.Locale;
-
 /**
- * Aux class that contains a method that will transform a milisecond time into its
- * "HH:MM:mm" equivalent.
- *
+ * Class that represents a time
  */
 public class SimplexTime {
 
+    private int hour;
+    private int minute;
+    private int second;
+
     /**
-     * Method that takes a long parameter representing a time interval and translates it into
-     * a human readable string.
+     * Constructor with three member vars
      *
-     * @param millis time interval
-     * @return       string with format "HH:MM:mm"
+     * @param hour
+     * @param minute
+     * @param second
      */
-    public static String getTimeString(long millis) {
+    public SimplexTime(int hour, int minute, int second) {
+        this.hour = hour;
+        this.minute = minute;
+        this.second = second;
+    }
 
-        // create a new string builder
-        StringBuilder buf = new StringBuilder();
+    /**
+     * Getter for hour
+     *
+     * @return current stored hour
+     */
+    public int getHour() {
+        return hour;
+    }
 
-        // find out how many hours the millis parameter represents
-        int hours = (int) (millis / (1000 * 60 * 60));
-        // and how many minutes
-        int minutes = (int) ((millis % (1000 * 60 * 60)) / (1000 * 60));
-        // and how many seconds
-        int seconds = (int) (((millis % (1000 * 60 * 60)) % (1000 * 60)) / 1000);
+    /**
+     * Getter for minute
+     *
+     * @return current stored minute
+     */
+    public int getMinute() {
+        return minute;
+    }
 
-        // format and return
-        if (hours > 0) {
-            return buf
-                    .append(String.format(Locale.getDefault(), "%02d", hours))
-                    .append(":")
-                    .append(String.format(Locale.getDefault(), "%02d", minutes))
-                    .append(":")
-                    .append(String.format(Locale.getDefault(), "%02d", seconds)).toString();
-        } else {
-            return buf.append(String.format(Locale.getDefault(), "%02d", minutes))
-                    .append(":")
-                    .append(String.format(Locale.getDefault(), "%02d", seconds)).toString();
-        }
+    /**
+     * Getter for second
+     *
+     * @return current stored second
+     */
+    public int getSecond() {
+        return second;
     }
 }

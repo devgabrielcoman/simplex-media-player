@@ -11,6 +11,9 @@ import android.view.Gravity;
 import android.widget.TextView;
 
 import com.gabrielcoman.simplexmediaplayer.aux.style.SimplexStyle;
+import com.gabrielcoman.simplexmediaplayer.aux.time.SimplexTime;
+
+import java.util.Locale;
 
 /**
  * This class represents a custom TextView used to display video player time
@@ -51,7 +54,7 @@ public class TimeIndicator extends TextView {
         super(context, attrs, defStyleAttr);
 
         setGravity(Gravity.CENTER);
-        setText("00:00");
+        updateText(new SimplexTime(0, 0, 0));
         setBackgroundColor(Color.TRANSPARENT);
         setPadding(PADDING_HORZ, PADDING_VERT, PADDING_HORZ, PADDING_VERT);
     }
@@ -65,5 +68,32 @@ public class TimeIndicator extends TextView {
         if (style != null) {
             setTextColor(style.getTextColor());
         }
+    }
+
+    /**
+     * Method that updates the text of a time indicator
+     *
+     * @param time current simplex time
+     */
+    public void updateText (SimplexTime time) {
+
+        // create a new string builder
+        StringBuilder buffer = new StringBuilder();
+
+        // format and return
+        if (time.getHour() > 0) {
+            buffer.append(String.format(Locale.getDefault(), "%02d", time.getHour()))
+                    .append(":")
+                    .append(String.format(Locale.getDefault(), "%02d", time.getMinute()))
+                    .append(":")
+                    .append(String.format(Locale.getDefault(), "%02d", time.getSecond()));
+        } else {
+            buffer.append(String.format(Locale.getDefault(), "%02d", time.getMinute()))
+                    .append(":")
+                    .append(String.format(Locale.getDefault(), "%02d", time.getSecond()));
+        }
+
+        // update text
+        setText(buffer.toString());
     }
 }
