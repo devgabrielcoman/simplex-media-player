@@ -15,18 +15,17 @@ Integration
 To add the media player to your activity directly in your layout:
 
 ```xml
-<RelativeLayout
-		android:id="@+id/PlayerHolder"
+<RelativeLayout android:id="@+id/PlayerHolder"
 		android:layout_width="match_parent"
 		android:layout_height="300dp">
 
-		<fragment
-				android:id="@+id/SimplexPlayer"
+		<fragment android:id="@+id/SimplexPlayer"
 				android:name="com.gabrielcoman.simplexmediaplayer.Simplex"
 				android:layout_width="match_parent"
 				android:layout_height="match_parent"/>
 
 </RelativeLayout>
+
 ```
 
 Then in your activity source code:
@@ -46,6 +45,7 @@ protected void onCreate(Bundle savedInstanceState) {
 	// and find the Simplex fragment defined in your XML layout
 	mSimplex = (Simplex) manager.findFragmentById(R.id.SimplexPlayer);
 }
+
 ```
 
 As an alternative, if you don't want to add it in your layout XML file, you can create
@@ -82,13 +82,108 @@ protected void onCreate(Bundle savedInstanceState) {
 			myPlayer = (Simplex) manager.findFragmentByTag(kSIMPLEX_PLAYER);
 	}
 }
+
 ```
 
 Customize
 ---------
 
+You can define if you want the video to autostart:
+
+```java
+mSimplex.shouldAutoStart();
+
+```
+
+Or you can set the style of the player:
+
+```java
+mSimplex.setStyle (SimplexStyle.greenStyle());
+
+```
+
+The **SimplexStyle** class implements multiple factory methods such as:
+
+* redStyle ()
+* blueStyle ()
+* greenStyle ()
+* grayStyle ()
+
+All of these methods change the player playback bar color.
+
+If you want to implement your own custom style:
+
+```java
+
+SimplexStyle myStyle = new SimplexStyle ();
+
+// sets the color of the length bar
+myStyle.setLengthColor (0xff232323);
+// sets the color of the buffer progress bar
+myStyle.setBufferColor (0xff898989);
+// sets the color of the playback bar and thumb
+myStyle.setPlaybackColor (Color.BLUE);
+// sets the color of the current time and total time text views
+myStyle.setTextColor (Color.LTGRAY);
+// sets the bitmap for the play button
+myStyle.setPlayBitmap (Resources.customPlayButtonBitmap ());
+// sets the bitmap for the replay button (shown when a video
+// has ended playing)
+myStyle.setReplayBitmap (Resources.customReplayButtonBitmap ());
+
+// update the player style
+mSimplex.setStyle (myStyle);
+
+```
+
+Finally, if you don't want to use the default Simplex controller, you can hide it:
+
+```java
+mSimplex.hideController ();
+
+```
+
 Play
 ----
+
+Finally, once you've added your Simplex Media Player instance to your activity and
+set it up as you like it, you can set either a remote media resource:
+
+```java
+
+String remoteMediaUrl = "https://myvideo.com/video.mp4";
+
+// the player will set the media resource as a remote Url and
+// will try to stream it
+mSimplex.setMedia(remoteMediaUrl);
+
+```
+
+or a local file:
+
+```java
+
+String localMediaName = "video.mp4";
+
+// create a File object.
+// The media that you want to play must be in the Android files directory
+File file = new File(context.getFilesDir(), localMediaName);
+
+if (file.exists()) {
+
+	// get the full file path
+	String filePath = file.toString ();
+
+	// the player will set the media resource as a file path and will try to
+	// play it locally
+	mSimplex.setMedia (filePath);
+}
+
+```
+
+If you've setup the player to autostart using **mSimplex.shouldAutoStart()**, then once everything is ready, the  
+media resource will start buffering and playing.
+If not, the user may use the media player controller UI to start video playing.
 
 Callbacks
 ---------
