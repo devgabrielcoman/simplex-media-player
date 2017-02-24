@@ -10,7 +10,6 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.support.annotation.Nullable;
 import android.util.Patterns;
 import android.view.LayoutInflater;
 import android.view.SurfaceHolder;
@@ -196,7 +195,6 @@ public class Simplex extends Fragment implements
      * @param savedInstanceState the previously saved instance state
      * @return                   the view to be displayed
      */
-    @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
