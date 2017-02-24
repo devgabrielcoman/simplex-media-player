@@ -12,8 +12,21 @@ Download
 Integration
 -----------
 
-Customise
+To add the media player to your activity:
+
+```xml
+<fragment
+		android:id="@+id/SimplexPlayer"
+		android:name="com.gabrielcoman.simplexmediaplayer.Simplex"
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"/>
+```
+
+Customize
 ---------
 
 Callbacks
 ---------
+
+Todos
+-----
