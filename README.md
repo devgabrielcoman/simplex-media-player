@@ -213,33 +213,27 @@ The Simplex Media Player provides an easy to use interface for receiving callbac
 ```java
 
 mSimplex.setListener(new Simplex.Listener() {
-		@Override public void didStart() {
-				Log.d("SIMPLEX", "Player started playing");
-		}
-
-		@Override public void didPause() {
-				Log.d("SIMPLEX", "Player paused");
-		}
-
-		@Override public void didComplete() {
-				Log.d("SIMPLEX", "Player completed");
-		}
-
-		@Override public void didError() {
-				Log.d("SIMPLEX", "Player encountered an error");
-		}
-
-		@Override public void didClose () {
-				Log.d("SIMPLEX", "Player closed");
-		}
-
-		@Override public void didUpdateBuffer(float percent) {
-				Log.d("SIMPLEX", "Player got buffered data up to " + percent);
-		}
-
-		@Override public void didUpdatePlayback(int hour, int minute, int second) {
-				Log.d("SIMPLEX", "Player played to " + hour + ":" + minute + ":" + second);
-		}
+	@Override public void didStart() {
+		// Player started playing current media
+	}
+	@Override public void didPause() {
+		// Player paused current media
+	}
+	@Override public void didComplete() {
+		// Player completed playing media
+	}
+	@Override public void didError() {
+		// Player encountered an error
+	}
+	@Override public void didClose () {
+		// Player closed
+	}
+	@Override public void didUpdateBuffer(float percent) {
+		// Player got buffered data up to "percent"
+	}
+	@Override public void didUpdatePlayback(int hour, int minute, int second) {
+		// Player played to time indicated by hour, minute and second
+	}
 });
 
 ```
