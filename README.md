@@ -22,7 +22,7 @@ repositories {
 
 ```
 
-To your list of repositories, then in your dependency section, add:
+to your list of repositories, then, in your dependency section, add:
 
 ```javascript
 compile 'com.gabrielcoman.simplexmediaplayer:simplexmediaplayer:1.0.13'
@@ -207,6 +207,42 @@ If not, the user may use the media player controller UI to start video playing.
 
 Callbacks
 ---------
+
+The Simplex Media Player provides an easy to use interface for receiving callback events:
+
+```java
+
+mSimplex.setListener(new Simplex.Listener() {
+		@Override public void didStart() {
+				Log.d("SIMPLEX", "Player started playing");
+		}
+
+		@Override public void didPause() {
+				Log.d("SIMPLEX", "Player paused");
+		}
+
+		@Override public void didComplete() {
+				Log.d("SIMPLEX", "Player completed");
+		}
+
+		@Override public void didError() {
+				Log.d("SIMPLEX", "Player encountered an error");
+		}
+
+		@Override public void didClose () {
+				Log.d("SIMPLEX", "Player closed");
+		}
+
+		@Override public void didUpdateBuffer(float percent) {
+				Log.d("SIMPLEX", "Player got buffered data up to " + percent);
+		}
+
+		@Override public void didUpdatePlayback(int hour, int minute, int second) {
+				Log.d("SIMPLEX", "Player played to " + hour + ":" + minute + ":" + second);
+		}
+});
+
+```
 
 Todos
 -----
