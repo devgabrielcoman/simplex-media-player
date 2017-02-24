@@ -9,6 +9,26 @@ It's aim is to provide a safe and simple way of creating and interacting with a 
 Download
 --------
 
+To download the media player, use **Gradle**:
+
+First add:
+
+```javascript
+repositories {
+    maven {
+        url  "http://dl.bintray.com/gabrielcoman/maven"
+    }
+}
+
+```
+
+To your list of repositories, then in your dependency section, add:
+
+```javascript
+compile 'com.gabrielcoman.simplexmediaplayer:simplexmediaplayer:1.0.13'
+
+```
+
 Integration
 -----------
 

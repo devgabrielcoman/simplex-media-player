@@ -41,7 +41,7 @@ bintray {
         name = "SimplexMediaPlayer"
         websiteUrl = siteUrl
         vcsUrl = gitUrl
-        licenses = ["GNU GPL v3"]
+        licenses = ["Apache-2.0"]
         publish = true
     }
 }
