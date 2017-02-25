@@ -27,7 +27,7 @@ repositories {
 to your list of repositories, then, in your dependency section, add:
 
 ```javascript
-compile 'com.gabrielcoman.simplexmediaplayer:simplexmediaplayer:1.0.13'
+compile 'com.gabrielcoman.simplexmediaplayer:simplexmediaplayer:1.0.14'
 
 ```
 
