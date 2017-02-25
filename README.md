@@ -6,7 +6,7 @@ Simplex Media Player
 The Simplex Media Player is an easy to use custom player built on top of the standard Android Media Player class.
 It's aim is to provide a safe and simple way of creating and interacting with a media player, without to much boilerplate code.
 
-![alt tag](docres/img1.png)
+![alt tag](docres/img.png)
 
 Download
 --------
