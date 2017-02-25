@@ -159,6 +159,7 @@ public class Simplex extends Fragment implements
 
                     // get time
                     SimplexTime time = SimplexTimeAux.getTime(currentTime);
+                    SimplexTime totalTime = SimplexTimeAux.getTime(totalDuration);
 
                     // call listener
                     if (state == PlaybackState.PLAYING) {
@@ -171,7 +172,7 @@ public class Simplex extends Fragment implements
                         controller.updatePlayback(playbackPercent);
                         controller.updateThumb(playbackPercent);
                         controller.updateCurrentTime(time);
-                        controller.updateTotalTime(time);
+                        controller.updateTotalTime(totalTime);
                         controller.updateBuffer(bufferPercent);
                         controller.updateButtonPlaybackForState (state);
                     } catch (Exception e) {

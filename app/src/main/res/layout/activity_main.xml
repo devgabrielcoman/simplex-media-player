@@ -4,55 +4,51 @@
     android:id="@+id/activity_main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
     android:orientation="vertical"
     tools:context="com.gabrielcoman.simplexmediaplayerdemo.MainActivity">
 
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="40dp"
-        android:orientation="horizontal">
+    <!--<LinearLayout-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="40dp"-->
+        <!--android:orientation="horizontal">-->
 
-        <Button
-            android:text="Open Activity"
-            android:onClick="gotoOther"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="match_parent" />
-        <Button
-            android:text="Destroy"
-            android:onClick="destroyVideo"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="match_parent" />
-        <Button
-            android:text="Media 1"
-            android:onClick="playMedia1"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="match_parent" />
-        <Button
-            android:text="Media 2"
-            android:onClick="playMedia2"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="match_parent" />
-    </LinearLayout>
+        <!--<Button-->
+            <!--android:text="Open Activity"-->
+            <!--android:onClick="gotoOther"-->
+            <!--android:layout_width="0dp"-->
+            <!--android:layout_weight="1"-->
+            <!--android:layout_height="match_parent" />-->
+        <!--<Button-->
+            <!--android:text="Destroy"-->
+            <!--android:onClick="destroyVideo"-->
+            <!--android:layout_width="0dp"-->
+            <!--android:layout_weight="1"-->
+            <!--android:layout_height="match_parent" />-->
+        <!--<Button-->
+            <!--android:text="Media 1"-->
+            <!--android:onClick="playMedia1"-->
+            <!--android:layout_width="0dp"-->
+            <!--android:layout_weight="1"-->
+            <!--android:layout_height="match_parent" />-->
+        <!--<Button-->
+            <!--android:text="Media 2"-->
+            <!--android:onClick="playMedia2"-->
+            <!--android:layout_width="0dp"-->
+            <!--android:layout_weight="1"-->
+            <!--android:layout_height="match_parent" />-->
+    <!--</LinearLayout>-->
 
     <RelativeLayout
         android:id="@+id/PlayerHolder"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <fragment
-            android:id="@+id/Player"
-            android:name="com.gabrielcoman.simplexmediaplayer.Simplex"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+        <!--<fragment-->
+            <!--android:id="@+id/Player"-->
+            <!--android:name="com.gabrielcoman.simplexmediaplayer.Simplex"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="match_parent"/>-->
 
     </RelativeLayout>
 
